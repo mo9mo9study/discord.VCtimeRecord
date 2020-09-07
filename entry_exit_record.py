@@ -16,6 +16,9 @@ NotRecordChannels = '時間記録無'
 logsPath = botScriptPath +"/"+ logsDirectory +"/"
 print(logsPath)
 
+## 修正箇所
+## 時間記録無しから時間記録有りのチャンネル間移動で「入室/退室」処理を行えるようにする
+## DBに書き込みように処理を行う
 
 def writeLog(time,name,m,mdta=''):
     print(f'{name} : <ログの書き込み>')

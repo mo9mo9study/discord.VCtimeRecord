@@ -30,6 +30,11 @@ USER_SETTINGS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "us
 MAX_SEND_MESSAGE_LENGTH = 2000
 ALLOWED_REACTION_LIST = [':one:', ':two:', ':three:', ':four:', ':five:', ':six:', ':seven:', ':eight:', ':nine:', ':keycap_ten:']
 
+## 修正項目
+### 使用していない処理の削除
+### 結果出力処理のみに限定して、その他の機能は別ファイルに書き出す
+### DBから読み取る処理に変更
+
 #tag:month
 def getMonth(y, m):
     if m in {1, 3, 5, 7, 8, 10, 12}:

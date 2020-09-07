@@ -1,7 +1,6 @@
 # About
 ![Discord](https://discordapp.com/api/guilds/603582455756095488/widget.png?style=shield)
 [![GitHub forks](https://img.shields.io/github/forks/mo9mo9study/discord.VCtimeRecord)](https://github.com/mo9mo9study/discord.VCtimeRecord/network)
-[![GitHub issues](https://img.shields.io/github/issues/mo9mo9study/discord.VCtimeRecord)](https://github.com/mo9mo9study/discord.VCtimeRecord/issues)
 [![GitHub stars](https://img.shields.io/github/stars/mo9mo9study/discord.VCtimeRecord)](https://github.com/mo9mo9study/discord.VCtimeRecord/stargazers)
 [![GitHub issues](https://img.shields.io/github/issues/mo9mo9study/discord.VCtimeRecord)](https://github.com/mo9mo9study/discord.VCtimeRecord/issues)
 - Discord サーバー「もくもくOnline勉強会」のBotです。

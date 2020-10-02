@@ -355,11 +355,6 @@ async def ago(ctx):
     await ctx.send("```" + sendMessage + "```⬇︎下のURLから簡単に積み上げツイートが出来るよ\n" + encodeMessage)
 
 @bot.command()
-async def joined(ctx,member : discord.Member):
-    await ctx.send('{0.name} joined in {0.joined_at}'.format(member))
-    print(ctx)
-
-@bot.command()
 async def Week_Result(ctx):
     message = ctx.message
     print('Used Command :' + ctx.invoked_with + ' (User) ' + message.author.name)

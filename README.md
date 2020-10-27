@@ -5,6 +5,10 @@
 [![GitHub issues](https://img.shields.io/github/issues/mo9mo9study/discord.VCtimeRecord)](https://github.com/mo9mo9study/discord.VCtimeRecord/issues)
 - Discord サーバー「もくもくOnline勉強会」のBotです。
 
+# 環境説明
+- pyenv(anyenv)を使用しています
+- venvを使用しています
+
 # 簡単なBOTの説明
 - ボイスチャットに在籍している時間を記録します
 - 記録した時間を日次・週次・月次で集計して特定のチャンネルに出力します

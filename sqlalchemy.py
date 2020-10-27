@@ -13,11 +13,11 @@ class Person(Base):
 
 
 def get_db_url():
-    db_user     = ""
-    db_pswd     = ""
-    db_server   = ""
-    db_port     = ""
-    db_db       = ""
+    db_user     = setting.dbaccess["user"]
+    db_pswd     = setting.dbaccess["pswd"]
+    db_server   = setting.dbaccess["server"]
+    db_port     = setting.dbaccess["port"]
+    db_db       = setting.dbaccess["db"]
 
     return "mysql+pymysql://"+\
             db_user+":"+\

@@ -1,0 +1,12 @@
+.env
+.vagrant
+music
+__pycache__
+test*
+!ansible/**
+
+entry_exit/timelog/
+node_modules
+*.log
+
+.idea

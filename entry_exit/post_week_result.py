@@ -44,24 +44,24 @@ def getMonth(y, m):
         return 0
 
 
-#tag:month
-def getLastMonthValiable(request):
-    thisMonth_YMFirstday = datetime(int(datetime.strftime(datetime.today(),'%Y')), int(datetime.strftime(datetime.today(),'%m')), 1) #ex)2020-03
-    lastMonth_Y = int(datetime.strftime(datetime.today() - relativedelta(months=1), '%Y')) #ex)2020
-    lastMonth_M = int(datetime.strftime(datetime.today() - relativedelta(months=1), '%m')) #ex)3
-    lastMonth_YMFirstday = date(lastMonth_Y, lastMonth_M , 1) #ex)2020-03-01
-    lastMonth_Days = getMonth(lastMonth_Y, lastMonth_M)
-#    print('-----> debug')
-#    print('lastMonth_Y: ',lastMonth_Y)
-#    print('lastMonth_M: ',lastMonth_M)
-#    print('lastMonth_YMFirstday: ',lastMonth_YMFirstday)
-#    print('-----> debug')
-    if request == 'thisMonth_YMFirstday':
-        return thisMonth_YMFirstday
-    if request == 'lastMonth_YMFirstday':
-        return lastMonth_YMFirstday
-    if request == 'D':
-        return lastMonth_Day
+##tag:month
+#def getLastMonthValiable(request):
+#    thisMonth_YMFirstday = datetime(int(datetime.strftime(datetime.today(),'%Y')), int(datetime.strftime(datetime.today(),'%m')), 1) #ex)2020-03
+#    lastMonth_Y = int(datetime.strftime(datetime.today() - relativedelta(months=1), '%Y')) #ex)2020
+#    lastMonth_M = int(datetime.strftime(datetime.today() - relativedelta(months=1), '%m')) #ex)3
+#    lastMonth_YMFirstday = date(lastMonth_Y, lastMonth_M , 1) #ex)2020-03-01
+#    lastMonth_Days = getMonth(lastMonth_Y, lastMonth_M)
+##    print('-----> debug')
+##    print('lastMonth_Y: ',lastMonth_Y)
+##    print('lastMonth_M: ',lastMonth_M)
+##    print('lastMonth_YMFirstday: ',lastMonth_YMFirstday)
+##    print('-----> debug')
+#    if request == 'thisMonth_YMFirstday':
+#        return thisMonth_YMFirstday
+#    if request == 'lastMonth_YMFirstday':
+#        return lastMonth_YMFirstday
+#    if request == 'D':
+#        return lastMonth_Day
 
 
 def minutes2time(m):
@@ -132,22 +132,22 @@ def compose_users_weekrecord(strtoday, days, users_log):
     week_result[-1] += code_block # end code_block
     return week_result
 
-#tag:month
-def compose_users_monthrecord(strtoday, days, users_log):
-    code_block = "```"
-    separate = "====================\n"
-    start_message = serialize_log("@everyone ")
-    start_message += code_block + "\n"
-    start_message += serialize_log("取得日：", strtoday)
-    start_message += serialize_log("先月の日付：", getLastMonthValiable('lastMonth_YMFirstday'),"~", days[-1])
-    month_result = [start_message]
-    for user_log in users_log:
-        if len(month_result[-1] + (separate + user_log)) >= MAX_SEND_MESSAGE_LENGTH - len(code_block):
-            month_result[-1] += code_block # end code_block
-            month_result.append(code_block) # start code_block
-        month_result[-1] += separate + user_log
-    month_result[-1] += code_block # end code_block
-    return month_result
+##tag:month
+#def compose_users_monthrecord(strtoday, days, users_log):
+#    code_block = "```"
+#    separate = "====================\n"
+#    start_message = serialize_log("@everyone ")
+#    start_message += code_block + "\n"
+#    start_message += serialize_log("取得日：", strtoday)
+#    start_message += serialize_log("先月の日付：", getLastMonthValiable('lastMonth_YMFirstday'),"~", days[-1])
+#    month_result = [start_message]
+#    for user_log in users_log:
+#        if len(month_result[-1] + (separate + user_log)) >= MAX_SEND_MESSAGE_LENGTH - len(code_block):
+#            month_result[-1] += code_block # end code_block
+#            month_result.append(code_block) # start code_block
+#        month_result[-1] += separate + user_log
+#    month_result[-1] += code_block # end code_block
+#    return month_result
 
 
 def compose_user_record(name, day, studytime):
@@ -240,14 +240,14 @@ def create_week_result():
     week_result = compose_users_weekrecord(strtoday, days, user_records)
     return week_result
 
-#tag:month
-def create_month_result():
-    today = datetime.today()
-    strtoday = datetime.strftime(today, '%Y-%m-%d')
-    days = arr_monthdays(today)
-    user_records = aggregate_users_record(days)
-    month_result = compose_user_records(strtoday, days, user_records)
-    return month_result
+##tag:month
+#def create_month_result():
+#    today = datetime.today()
+#    strtoday = datetime.strftime(today, '%Y-%m-%d')
+#    days = arr_monthdays(today)
+#    user_records = aggregate_users_record(days)
+#    month_result = compose_user_records(strtoday, days, user_records)
+#    return month_result
 
 # (確認用)実行された時に出力されるデータの想定
 ##str_weekResult = create_week_result()
@@ -371,18 +371,18 @@ async def Week_Result(ctx):
     for week_result in week_results:
         await channel.send(week_result)
 
-@bot.command()
-async def Month_Result(ctx):
-    message = ctx.message
-    print('Used Command :' + ctx.invoked_with + ' (User) ' + message.author.name)
-    if message.author.id != 603567991132782592:
-        print('管理者(SuPleiades)以外のメンバーが実行しました')
-        return
-    print(f'手動月間集計実行日: {datetime.now().strftime("%Y-%m-%d %H:%M")}')
-    channel = client.get_channel(CHANNEL)
-    month_results = create_month_result()
-    for month_result in month_results:
-        await channel.send(month_result)
+#@bot.command()
+#async def Month_Result(ctx):
+#    message = ctx.message
+#    print('Used Command :' + ctx.invoked_with + ' (User) ' + message.author.name)
+#    if message.author.id != 603567991132782592:
+#        print('管理者(SuPleiades)以外のメンバーが実行しました')
+#        return
+#    print(f'手動月間集計実行日: {datetime.now().strftime("%Y-%m-%d %H:%M")}')
+#    channel = client.get_channel(CHANNEL)
+#    month_results = create_month_result()
+#    for month_result in month_results:
+#        await channel.send(month_result)
 
 
 #=======================
@@ -518,15 +518,15 @@ async def post_result():
             channel = bot.get_channel(CHANNEL)
             for week_result in week_results:
                 await channel.send(week_result)
-    #pose_month_result
-    if datetime.now().strftime('%H:%M') == "07:35":
-        if datetime.now().strftime('%d') == '01':
-            print('実行日: ', datetime.now().strftime('%d'))
-            print(f'月間集計実行日: {datetime.now().strftime("%Y-%m-%d %H:%M")}')
-            channel = bot.get_channel(CHANNEL)
-            month_results = create_month_result()
-            for month_result in month_results:
-                await channel.send(month_result)
+#    #pose_month_result
+#    if datetime.now().strftime('%H:%M') == "07:35":
+#        if datetime.now().strftime('%d') == '01':
+#            print('実行日: ', datetime.now().strftime('%d'))
+#            print(f'月間集計実行日: {datetime.now().strftime("%Y-%m-%d %H:%M")}')
+#            channel = bot.get_channel(CHANNEL)
+#            month_results = create_month_result()
+#            for month_result in month_results:
+#                await channel.send(month_result)
 
 post_result.start()
 bot.run(TOKEN)

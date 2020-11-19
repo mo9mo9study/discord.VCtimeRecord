@@ -17,15 +17,13 @@ from discord.ext import tasks, commands
 
 client = discord.Client()
 bot = commands.Bot(command_prefix='¥')
-## testroleiギルドの[テストBOT007]にて起動
 #TOKEN = setting.tToken
 #SERVER = setting.tServer
 TOKEN = setting.dToken
 wCHANNEL = setting.wChannel
 mCHANNEL = setting.mChannel
 SERVER = setting.dServer
-#LOG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "timelog")
-LOG_DIR = os.path.join("/home/centos/repos/discord.VCtimeRecord/entry_exit/", "timelog")
+LOG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "timelog")
 USER_SETTINGS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "userSettings")
 MAX_SEND_MESSAGE_LENGTH = 2000
 
@@ -113,8 +111,8 @@ def construct_user_monthrecord(user_name, studyMonth_day, sum_study_time):
 def compose_users_weekrecord(strtoday, days, users_log):
     code_block = "```"
     separate = "====================\n"
-#    start_message = serialize_log("@everyone ")
-    start_message = serialize_log("everyone ")
+    start_message = serialize_log("@everyone ")
+#    start_message = serialize_log("everyone ")
     start_message += code_block + "\n"
     start_message += serialize_log("今日の日付：", strtoday)
     start_message += serialize_log("先週の日付：", days[0], "~", days[-1])
@@ -131,8 +129,8 @@ def compose_users_weekrecord(strtoday, days, users_log):
 def compose_users_monthrecord(strtoday, days, users_log):
     code_block = "```"
     separate = "====================\n"
-#    start_message = serialize_log("@everyone ")
-    start_message = serialize_log("everyone ")
+    start_message = serialize_log("@everyone ")
+#    start_message = serialize_log("everyone ")
     start_message += code_block + "\n"
     start_message += serialize_log("取得日：", strtoday)
     start_message += serialize_log("先月の日付：", getLastMonthValiable('lastMonth_YMFirstday'),"~", days[-1])
@@ -336,7 +334,6 @@ async def ago(ctx):
     embed = discord.Embed(title="積み上げツイート用",description=sendMessage,color=0xFDB46C)
     embed.add_field(name="⬇︎下のURLから簡単に積み上げツイートが出来るよ",value=encodeMessage)
     await ctx.send(embed=embed)
-    #await ctx.send("```" + sendMessage + "```⬇︎下のURLから簡単に積み上げツイートが出来るよ\n" + encodeMessage)
 
 
 @bot.command()

@@ -146,13 +146,14 @@ def compose_users_monthrecord(strtoday, days, users_log):
 
 def compose_user_record(name, day, studytime):
     day_result = '''
-====================
-[ 今日( {day} )の勉強時間 ]
-  --->{name} さんの勉強時間は[ {totalStudyTime} ]です
-====================
-#もくもくオンライン勉強会
-#もくもく勉強机
-#今日の積み上げ
+#今日の積み上げ 
+- 
+- 
+
+#もくもくオンライン勉強会 
+[ {day}の勉強時間 ]
+--->[ {totalStudyTime} ]勉強したよ
+#mo9mo9_{name}
     '''.format(name=name, day=day, totalStudyTime=str(minutes2time(studytime))).strip()
     return day_result
 

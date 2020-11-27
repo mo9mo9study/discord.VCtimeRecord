@@ -152,7 +152,7 @@ def compose_user_record(name, day, studytime):
 
 #もくもくオンライン勉強会 
 [ {day}の勉強時間 ]
---->[ {totalStudyTime} ]勉強したよ
+---> {totalStudyTime}
 #mo9mo9_{name}
     '''.format(name=name, day=day, totalStudyTime=str(minutes2time(studytime))).strip()
     return day_result

@@ -19,8 +19,7 @@ client = discord.Client()
 bot = commands.Bot(command_prefix='¥')
 TOKEN = setting.dToken
 SERVER = setting.dServer
-#LOG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "timelog")
-LOG_DIR = os.path.join(os.path.dirname("/home/centos/repos/discord.VCtimeRecord/entry_exit/"), "timelog")
+LOG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "timelog")
 USER_SETTINGS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "userSettings")
 MAX_SEND_MESSAGE_LENGTH = 2000
 

@@ -1,15 +1,8 @@
-.env
-.vagrant
-music
+# default
 __pycache__
-test*
-!ansible/**
-
-entry_exit/timelog/
-node_modules
-*.log
-
-.idea
-
-*/venv.python-version
 venv/
+
+# original
+.env
+entry_exit/timelog/
+test*

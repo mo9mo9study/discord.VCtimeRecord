@@ -50,7 +50,8 @@ async def on_voice_state_update(member, before, after):
     if member.guild.id == setting.dServer and (before.channel != after.channel):
         now = datetime.utcnow() + timedelta(hours=9)
         alert_channel = client.get_channel(setting.dChannel)
-        if before.channel is None:
+        # VC入室時 or 勉強記録なし--->勉強記録あり
+        if before.channel is None or NotRecordChannels in before.channel.name and before.channel != after.channel:
             print(f'{member.name} : 入室時の処理')
             pretime_dict['beforetime'] = datetime.now()
             msg = f'{now:%m/%d %H:%M} 　 {member.name}   joined the  {after.channel.name}'
@@ -59,7 +60,8 @@ async def on_voice_state_update(member, before, after):
                 print(f'{member.name} : NotRecordChannelsリストに記載されているので記録しません')
                 return
             await alert_channel.send(msg)
-        elif after.channel is None:
+        # VC退室時 or 勉強記録あり--->勉強記録なし
+        elif after.channel is None or NotRecordChannels in after.channel.name and before.channel != after.channel:
             print(f'{member.name} : 退室時の処理')
             if NotRecordChannels in before.channel.name:
                 print(f'{member.name} : NotRecordChannelsリストに記載されているので記録しません')

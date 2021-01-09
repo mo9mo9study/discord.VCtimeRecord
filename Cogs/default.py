@@ -1,4 +1,3 @@
-from datetime import datetime
 import asyncio
 
 from discord.ext import commands
@@ -15,7 +14,6 @@ class Default(commands.Cog):
         print('起動中...')
         print('BOT NAME : ' + self.bot.user.name)
         print('BOT ID : ' + str(self.bot.user.id))
-	print(datetime.now())
         print('--------------------')
 
 def setup(bot):

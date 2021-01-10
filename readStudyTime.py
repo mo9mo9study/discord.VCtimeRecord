@@ -2,11 +2,11 @@ from discord.ext import commands
 import discord
 import asyncio
 
-import setting
+import config
 
 
 intents = discord.Intents.all()
-TOKEN = setting.dToken
+TOKEN = config.dToken
 prefix = "¥"
 
 bot = commands.Bot(command_prefix=prefix,help_command=None,intents=intents)
@@ -14,8 +14,8 @@ bot = commands.Bot(command_prefix=prefix,help_command=None,intents=intents)
 
 bot.load_extension("Cogs.default")
 
-bot.load_extension("Cogs.Result.week_result")
-bot.load_extension("Cogs.Result.month_result")
+bot.load_extension("Cogs.Aggregationtime.weekResult")
+#bot.load_extension("Cogs.Aggregationtime.monthResult")
 
 
 bot.run(TOKEN)

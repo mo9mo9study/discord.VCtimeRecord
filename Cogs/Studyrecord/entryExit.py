@@ -85,7 +85,7 @@ class ENTRY_EXIT(commands.Cog):
                             print(f"exit_date: {exit_date}")
                             if entry_date != exit_date: # 日付を跨いだ時の処理
                                 # 入室時から23:59:59までの経過時間を算出
-                                agoday_studytime = int((dtBeforetime - datetime(entry_date.year, entry_date.month, entry_date.day, 23, 59, 59)).total_secconds() * -1) // 60
+                                agoday_studytime = int((dtBeforetime - datetime(entry_date.year, entry_date.month, entry_date.day, 23, 59, 59)).total_seconds() * -1) // 60
                                 result_studytimes = [agoday_studytime]
                                 # 00:00:00から退室時までの経過時間を算出
                                 day_studytime = int((datetime.combine(date.today(), time(0,0)) - datetime.now()).total_seconds()) * -1 // 60

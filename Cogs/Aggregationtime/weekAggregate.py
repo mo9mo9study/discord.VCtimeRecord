@@ -6,8 +6,10 @@ import asyncio
 class Week_Result(commands.Cog):
     def __init__(self,bot):
         self.bot = bot
-        self.guild_id = 603582455756095488 #もくもくOnline勉強会
-        self.channel_id = 683936366756888616 #週間勉強集計
+        self.guild_id = 470074961617354773 #もくもくOnline勉強会
+        self.channel_id = 792017963800330261 #週間勉強集計
+        #self.guild_id = 603582455756095488 #もくもくOnline勉強会
+        #self.channel_id = 683936366756888616 #週間勉強集計
 
 
     def minutes2time(self, m):

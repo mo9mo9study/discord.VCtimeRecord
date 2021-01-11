@@ -89,7 +89,7 @@ class Personal_DayRecord(commands.Cog):
         if ctx.subcommand_passed is None:
             print("-----------")
             print(vars(ctx))
-            print("===========")
+            print("-----------")
             name = ctx.author.name
             today = datetime.today()
             strtoday = datetime.strftime(today, '%Y-%m-%d')
@@ -103,23 +103,23 @@ class Personal_DayRecord(commands.Cog):
         else:
             await ctx.send("[ " + ctx.subcommand_passed + " ]は無効な引数です")
 
-    #@result_d.command()
-    #async def ago(self, ctx):
-    #    #前日分の日次集計
-    #    print("-----------")
-    #    print(vars(ctx))
-    #    print("===========")
-    #    name = ctx.author.name
-    #    today = datetime.today()
-    #    day = today - timedelta(1)
-    #    strday = datetime.strftime(day, '%Y-%m-%d')
-    #    sum_study_time = aggregate_day_users_record(name, strday)
-    #    sendMessage = compose_user_record(name, strday, sum_study_time)
-    #    longUrl = createTwitterUrlEncode("https://mo9mo9study.github.io/discord.web/", sendMessage)
-    #    encodeMessage = shorten_url(longUrl, self.googleShortLinksPrefix , self.googleApiKey)
-    #    embed = discord.Embed(title="積み上げツイート用",description=sendMessage,color=0xFDB46C)
-    #    embed.add_field(name="⬇︎下のURLから簡単に積み上げツイートが出来るよ",value=encodeMessage)
-    #    await ctx.send(embed=embed)
+    @result_d.command()
+    async def ago(self, ctx):
+        #前日分の日次集計
+        print("-----------")
+        print(vars(ctx))
+        print("-----------")
+        name = ctx.author.name
+        today = datetime.today()
+        day = today - timedelta(1)
+        strday = datetime.strftime(day, '%Y-%m-%d')
+        sum_study_time = self.aggregate_day_users_record(name, strday)
+        sendMessage = self.compose_user_record(name, strday, sum_study_time)
+        longUrl = self.createTwitterUrlEncode("https://mo9mo9study.github.io/discord.web/", sendMessage)
+        encodeMessage = self.shorten_url(longUrl, self.googleShortLinksPrefix , self.googleApiKey)
+        embed = discord.Embed(title="積み上げツイート用",description=sendMessage,color=0xFDB46C)
+        embed.add_field(name="⬇︎下のURLから簡単に積み上げツイートが出来るよ",value=encodeMessage)
+        await ctx.send(embed=embed)
 
 
 

@@ -6,7 +6,7 @@ import config
 
 
 intents = discord.Intents.all()
-TOKEN = config.dToken
+TOKEN = config.Token
 prefix = "¥"
 
 bot = commands.Bot(command_prefix=prefix,help_command=None,intents=intents)
@@ -14,8 +14,8 @@ bot = commands.Bot(command_prefix=prefix,help_command=None,intents=intents)
 
 bot.load_extension("Cogs.default")
 
-bot.load_extension("Cogs.Aggregationtime.weekResult")
-#bot.load_extension("Cogs.Aggregationtime.monthResult")
+#bot.load_extension("Cogs.Aggregationtime.weekRecord")
+bot.load_extension("Cogs.Aggregationtime.personalDayRecord")
 
 
 bot.run(TOKEN)

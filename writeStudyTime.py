@@ -6,7 +6,7 @@ import config
 
 
 intents = discord.Intents.all()
-TOKEN = config.dToken
+TOKEN = config.Token
 prefix = "¥"
 
 bot = commands.Bot(command_prefix=prefix,help_command=None,intents=intents)

@@ -9,13 +9,17 @@ intents = discord.Intents.all()
 TOKEN = config.Token
 prefix = "¥"
 
-bot = commands.Bot(command_prefix=prefix,help_command=None,intents=intents)
+bot = commands.Bot(command_prefix=prefix,intents=intents)
 
 
 bot.load_extension("Cogs.default")
 
-#bot.load_extension("Cogs.Aggregationtime.weekRecord")
+bot.load_extension("Cogs.Aggregationtime.weekAggregate")
+bot.load_extension("Cogs.Aggregationtime.monthAggregate")
+bot.load_extension("Cogs.Aggregationtime.cronAggregate")
 bot.load_extension("Cogs.Aggregationtime.personalDayRecord")
+bot.load_extension("Cogs.Studyrecord.entryExit")
+
 
 
 bot.run(TOKEN)

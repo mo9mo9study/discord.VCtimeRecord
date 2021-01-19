@@ -1,15 +1,22 @@
+import os
+import re
+import magic
+from datetime import datetime, timedelta
+
 from discord.ext import commands
 import discord
 import asyncio
 
+class Week_Aggregate(commands.Cog):
 
-class Week_Result(commands.Cog):
     def __init__(self,bot):
         self.bot = bot
-        self.guild_id = 470074961617354773 #もくもくOnline勉強会
-        self.channel_id = 792017963800330261 #週間勉強集計
+        self.guild_id = 470074961617354773 
+        self.channel_id = 792017963800330261 
         #self.guild_id = 603582455756095488 #もくもくOnline勉強会
         #self.channel_id = 683936366756888616 #週間勉強集計
+        self.LOG_DIR = os.path.join("/home/centos/repos/discord.VCtimeRecord/entry_exit/", "timelog")
+        self.MAX_SEND_MESSAGE_LENGTH = 2000
 
 
     def minutes2time(self, m):
@@ -55,18 +62,36 @@ class Week_Result(commands.Cog):
         return lines_strip
 
 
+    def serialize_log(self, *args, end="\n"):
+        context = "".join(map(str, args)) + end
+        return context
+
+
+    def construct_user_weekrecord(self, user_name, studyWeekday, sum_study_time):
+        userWeekResult = self.serialize_log("Name：", user_name)
+        #ex) 配列内の[04-20]月-日の文字列を[20]0埋めしない日に変換
+        studyDay = []
+        for item in studyWeekday:
+            item_mod = re.sub(r'(^[0-9]{2})-0?([1-9]?[0-9]$)',r'\2',item)
+            studyDay.append(item_mod)
+        #ex) [04-20]
+        userWeekResult += self.serialize_log("　勉強した日付：", str(studyDay))
+        userWeekResult += self.serialize_log("　合計勉強時間：", str(self.minutes2time(sum_study_time)))
+        return userWeekResult
+
+
     def aggregate_users_record(self, days, status):
         """
         各ユーザーの１週間の学習時間と日数を集計する
         """
-        user_list = [os.path.join(LOG_DIR, txt) for txt in os.listdir(LOG_DIR)]
-        user_list = exclude_non_txt(user_list)
+        user_list = [os.path.join(self.LOG_DIR, txt) for txt in os.listdir(self.LOG_DIR)]
+        user_list = self.exclude_non_txt(user_list)
         memberStudytime = []
         users_record = []
         obj = {}
         for user_log in user_list:
             # ログファイル読み込み
-            lines_strip = read_file(user_log)
+            lines_strip = self.read_file(user_log)
             # １週間以内に勉強した日の学習ログのみ抜き出す
             study_logs = []
             for line in lines_strip:
@@ -90,9 +115,9 @@ class Week_Result(commands.Cog):
         memberStudytime.sort(key=lambda x: x["sumstudytime"], reverse=True)
         for studytime in memberStudytime :
             if status == "week":
-              user_record = construct_user_weekrecord(studytime["username"], studytime["studydays"], studytime["sumstudytime"])
+              user_record = self.construct_user_weekrecord(studytime["username"], studytime["studydays"], studytime["sumstudytime"])
             if status == "month":
-              user_record = construct_user_monthrecord(studytime["username"], studytime["studydays"], studytime["sumstudytime"])
+              user_record = self.construct_user_monthrecord(studytime["username"], studytime["studydays"], studytime["sumstudytime"])
             users_record.append(user_record)
         print("~< ソート済整形データ >~~~~~~~~~~~~~~~~~~~~~~~~~~")
         print(memberStudytime)
@@ -103,14 +128,14 @@ class Week_Result(commands.Cog):
     def compose_users_weekrecord(self, strtoday, days, users_log):
         code_block = "```"
         separate = "====================\n"
-        start_message = serialize_log("@everyone ")
-    #    start_message = serialize_log("everyone ")
+    #    start_message = self.serialize_log("@everyone ")
+        start_message = self.serialize_log("everyone ")
         start_message += code_block + "\n"
-        start_message += serialize_log("今日の日付：", strtoday)
-        start_message += serialize_log("先週の日付：", days[0], "~", days[-1])
+        start_message += self.serialize_log("今日の日付：", strtoday)
+        start_message += self.serialize_log("先週の日付：", days[0], "~", days[-1])
         week_result = [start_message]
         for user_log in users_log:
-            if len(week_result[-1] + (separate + user_log)) >= MAX_SEND_MESSAGE_LENGTH - len(code_block):
+            if len(week_result[-1] + (separate + user_log)) >= self.MAX_SEND_MESSAGE_LENGTH - len(code_block):
                 week_result[-1] += code_block # end code_block
                 week_result.append(code_block) # start code_block
             week_result[-1] += separate + user_log
@@ -118,7 +143,7 @@ class Week_Result(commands.Cog):
         return week_result
 
     
-    def getMonth(y, m):
+    def getMonth(self, y, m):
         if m in {1, 3, 5, 7, 8, 10, 12}:
             return 31
         elif m in {4, 6, 9, 11}:
@@ -137,7 +162,7 @@ class Week_Result(commands.Cog):
         lastMonth_Y = int(datetime.strftime(datetime.today() - relativedelta(months=1), '%Y')) #ex)2020
         lastMonth_M = int(datetime.strftime(datetime.today() - relativedelta(months=1), '%m')) #ex)3
         lastMonth_YMFirstday = date(lastMonth_Y, lastMonth_M , 1) #ex)2020-03-01
-        lastMonth_Days = getMonth(lastMonth_Y, lastMonth_M)
+        lastMonth_Days = self.getMonth(lastMonth_Y, lastMonth_M)
         if request == 'thisMonth_YMFirstday':
             return thisMonth_YMFirstday
         if request == 'lastMonth_YMFirstday':
@@ -149,14 +174,14 @@ class Week_Result(commands.Cog):
     def compose_users_monthrecord(self, strtoday, days, users_log):
         code_block = "```"
         separate = "====================\n"
-        start_message = serialize_log("@everyone ")
-    #    start_message = serialize_log("everyone ")
+    #    start_message = self.serialize_log("@everyone ")
+        start_message = self.serialize_log("everyone ")
         start_message += code_block + "\n"
-        start_message += serialize_log("取得日：", strtoday)
-        start_message += serialize_log("先月の日付：", getLastMonthValiable('lastMonth_YMFirstday'),"~", days[-1])
+        start_message += self.serialize_log("取得日：", strtoday)
+        start_message += self.serialize_log("先月の日付：", self.getLastMonthValiable('lastMonth_YMFirstday'),"~", days[-1])
         month_result = [start_message]
         for user_log in users_log:
-            if len(month_result[-1] + (separate + user_log)) >= MAX_SEND_MESSAGE_LENGTH - len(code_block):
+            if len(month_result[-1] + (separate + user_log)) >= self.MAX_SEND_MESSAGE_LENGTH - len(code_block):
                 month_result[-1] += code_block # end code_block
                 month_result.append(code_block) # start code_block
             month_result[-1] += separate + user_log
@@ -168,17 +193,17 @@ class Week_Result(commands.Cog):
         today = datetime.today()
         strtoday = datetime.strftime(today, '%Y-%m-%d')
         if status == "week":
-            days = arr_weekdays(today)
-            user_records = aggregate_users_record(days, status)
-            result = compose_users_weekrecord(strtoday, days, user_records)
+            days = self.arr_weekdays(today)
+            user_records = self.aggregate_users_record(days, status)
+            result = self.compose_users_weekrecord(strtoday, days, user_records)
         if status == "month":
-            days = arr_monthdays(today) 
-            user_records = aggregate_users_record(days, status)
-            result = compose_users_monthrecord(strtoday, days, user_records)
+            days = self.arr_monthdays(today) 
+            user_records = self.aggregate_users_record(days, status)
+            result = self.compose_users_monthrecord(strtoday, days, user_records)
         return result
 
 
-    @commands.command
+    @commands.command()
     @commands.has_permissions(administrator=True)
     async def Week_Result(self, ctx):
         message = ctx.message
@@ -187,11 +212,11 @@ class Week_Result(commands.Cog):
         #    print('管理者(SuPleiades)以外のメンバーが実行しました')
         #    return
         print(f"手動週間集計実行日: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
-        channel = bot.get_channel(self.channel_id)
-        week_results = create_result("week")
+        channel = self.bot.get_channel(self.channel_id)
+        week_results = self.create_result("week")
         for week_result in week_results:
             await channel.send(week_result)
 
 
 def setup(bot):
-    return bot.add_cog(Week_Result(bot))
+    return bot.add_cog(Week_Aggregate(bot))

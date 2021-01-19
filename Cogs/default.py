@@ -1,8 +1,11 @@
-import asyncio
+import datetime
 
 from discord.ext import commands
 import discord
+import asyncio
 
+
+print('起動中...')
 
 class Default(commands.Cog):
     def __init__(self,bot):
@@ -11,9 +14,9 @@ class Default(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         print('--------------------')
-        print('起動中...')
-        print('BOT NAME : ' + self.bot.user.name)
-        print('BOT ID : ' + str(self.bot.user.id))
+        print(f"BOT NAME : {self.bot.user.name}")
+        print(f"BOT ID   : {str(self.bot.user.id)}")
+        print(f"DATETIME : {datetime.datetime.now()}")
         print('--------------------')
 
 def setup(bot):

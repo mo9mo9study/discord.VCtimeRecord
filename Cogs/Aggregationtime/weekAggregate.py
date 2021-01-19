@@ -1,11 +1,13 @@
 import os
 import re
 import magic
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 from discord.ext import commands
 import discord
 import asyncio
+import dateutil
+from dateutil.relativedelta import relativedelta
 
 class Week_Aggregate(commands.Cog):
 
@@ -33,6 +35,7 @@ class Week_Aggregate(commands.Cog):
             day = today - timedelta(days=i)
             days.append(datetime.strftime(day, '%Y-%m-%d'))
         return days
+    
     
 
     def exclude_non_txt(self, file_list):
@@ -141,6 +144,11 @@ class Week_Aggregate(commands.Cog):
         return week_result
 
     
+    
+    # ======================================================
+    # Month
+    # ======================================================
+
     def getMonth(self, y, m):
         if m in {1, 3, 5, 7, 8, 10, 12}:
             return 31
@@ -153,7 +161,6 @@ class Week_Aggregate(commands.Cog):
                 return 28
         else:
             return 0
-    
     
     def getLastMonthValiable(self, request):
         thisMonth_YMFirstday = datetime(int(datetime.strftime(datetime.today(),'%Y')), int(datetime.strftime(datetime.today(),'%m')), 1) #ex)2020-03
@@ -168,6 +175,19 @@ class Week_Aggregate(commands.Cog):
         if request == 'D':
             return lastMonth_Days
 
+    def construct_user_monthrecord(self, user_name, studyMonth_day, sum_study_time):
+        userMonthResult = self.serialize_log("Name：", user_name)
+        print("(",user_name,")","　勉強した日付：", str(studyMonth_day))
+        userMonthResult += self.serialize_log("　合計勉強時間：", str(self.minutes2time(sum_study_time)),"(勉強日数：",len(studyMonth_day),")")
+        return userMonthResult
+
+    def arr_monthdays(self, today):
+        days = []
+        for i in reversed(range(1, self.getLastMonthValiable('D')+1)):
+            day = self.getLastMonthValiable('thisMonth_YMFirstday') - relativedelta(days=i)
+            print(day)
+            days.append(datetime.strftime(day, '%Y-%m-%d'))
+        return days
 
     def compose_users_monthrecord(self, strtoday, days, users_log):
         code_block = "```"
@@ -186,6 +206,7 @@ class Week_Aggregate(commands.Cog):
         month_result[-1] += code_block # end code_block
         return month_result
 
+    # ======================================================
 
     def create_result(self, status):
         today = datetime.today()

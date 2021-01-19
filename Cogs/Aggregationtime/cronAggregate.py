@@ -3,9 +3,9 @@ import discord
 import asyncio
 from datetime import datetime
 
-from .weekRecord import Week_Result 
+from .weekAggregate import Week_Aggregate
 
-class Cron_Aggregate(Week_Result):
+class Cron_Aggregate(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
@@ -17,7 +17,6 @@ class Cron_Aggregate(Week_Result):
     #自動集計用定期処理
     @tasks.loop(seconds=60)
     async def post_result(self):
-        print("test")
         await self.bot.wait_until_ready() #Botが準備状態になるまで待機
         #post_week_result
         if datetime.now().strftime('%H:%M') == "07:30":
@@ -30,13 +29,12 @@ class Cron_Aggregate(Week_Result):
         #post_month_result
         if datetime.now().strftime('%H:%M') == "07:35":
             if datetime.now().strftime('%d') == '01':
-                print('実行日: ', datetime.now().strftime('%d'))
                 print(f'月間集計実行日: {datetime.now().strftime("%Y-%m-%d %H:%M")}')
-                channel = self.bot.get_channel(self.month_channel_id)
                 month_results = create_result("month")
+                channel = self.bot.get_channel(self.month_channel_id)
                 for month_result in month_results:
                     await channel.send(month_result)
 
 
 def setup(bot):
-    bot.add_cog(Cron_Aggregate(bot))
+    return bot.add_cog(Cron_Aggregate(bot))

@@ -10,10 +10,11 @@ import urllib.parse
 import json
 import requests
 
-from .weekRecord import Week_Result 
+from .weekAggregate import Week_Aggregate
 
 
 class Personal_DayRecord(commands.Cog):
+    
     def __init__(self, bot):
         self.bot = bot
         dotenv_path = os.path.join(os.getcwd(), '.env')
@@ -55,7 +56,7 @@ class Personal_DayRecord(commands.Cog):
         user_log = self.LOG_DIR + '/' + name
         print(user_log)
         # ログファイルみ込み
-        lines_strip = Week_Result(self.bot).read_file(user_log)
+        lines_strip = Week_Aggregate(self.bot).read_file(user_log)
         # 指定された日付の勉強ログのみ抜き出す
         study_logs = []
         for line in lines_strip:
@@ -79,7 +80,7 @@ class Personal_DayRecord(commands.Cog):
 [ {day}の勉強時間 ]
 ---> {totalStudyTime}
 #mo9mo9_{name}
-        '''.format(name=name, day=day, totalStudyTime=str(Week_Result(self.bot).minutes2time(studytime))).strip()
+        '''.format(name=name, day=day, totalStudyTime=str(Week_Aggregate(self.bot).minutes2time(studytime))).strip()
         return day_result
 
 
@@ -99,7 +100,8 @@ class Personal_DayRecord(commands.Cog):
             encodeMessage = self.shorten_url(longUrl, self.googleShortLinksPrefix , self.googleApiKey)
             embed = discord.Embed(title="積み上げツイート用",description=sendMessage,color=0xFDB46C)
             embed.add_field(name="⬇︎下のURLから簡単に積み上げツイートが出来るよ",value=encodeMessage)
-            await ctx.send(embed=embed)
+            sendmsg = await ctx.send(embed=embed)
+            await sendmsg.add_reaction("<:otsukaresama:757813789952573520>")
         else:
             await ctx.send("[ " + ctx.subcommand_passed + " ]は無効な引数です")
 
@@ -119,7 +121,8 @@ class Personal_DayRecord(commands.Cog):
         encodeMessage = self.shorten_url(longUrl, self.googleShortLinksPrefix , self.googleApiKey)
         embed = discord.Embed(title="積み上げツイート用",description=sendMessage,color=0xFDB46C)
         embed.add_field(name="⬇︎下のURLから簡単に積み上げツイートが出来るよ",value=encodeMessage)
-        await ctx.send(embed=embed)
+        sendmsg = await ctx.send(embed=embed)
+        await sendmsg.add_reaction("<:otsukaresama:757813789952573520>")
 
 
 

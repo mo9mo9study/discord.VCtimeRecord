@@ -11,10 +11,8 @@ class Month_Aggregate(commands.Cog):
 
     def __init__(self,bot):
         self.bot = bot
-        self.guild_id = 470074961617354773 
-        self.channel_id = 792017963800330261 
-        #self.guild_id = 603582455756095488 #もくもくOnline勉強会
-        #self.channel_id = 683936646164774929 #月間勉強集計
+        self.guild_id = 603582455756095488 #もくもくOnline勉強会
+        self.channel_id = 683936646164774929 #月間勉強集計
         self.LOG_DIR = os.path.join("/home/centos/repos/discord.VCtimeRecord/entry_exit/", "timelog")
         self.MAX_SEND_MESSAGE_LENGTH = 2000
     
@@ -23,9 +21,6 @@ class Month_Aggregate(commands.Cog):
     async def Month_Result(self, ctx):
         message = ctx.message
         print(f"Used Command :{ctx.invoked_with} (User){message.author.name}")
-        #if message.author.id != 603567991132782592:
-        #    print('管理者(SuPleiades)以外のメンバーが実行しました')
-        #    return
         print(f'手動月間集計実行日: {datetime.now().strftime("%Y-%m-%d %H:%M")}')
         channel = self.bot.get_channel(self.channel_id)
         month_results = Week_Aggregate(self.bot).create_result("month")

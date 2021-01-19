@@ -18,8 +18,6 @@ bot.load_extension("Cogs.Aggregationtime.weekAggregate")
 bot.load_extension("Cogs.Aggregationtime.monthAggregate")
 bot.load_extension("Cogs.Aggregationtime.cronAggregate")
 bot.load_extension("Cogs.Aggregationtime.personalDayRecord")
-bot.load_extension("Cogs.Studyrecord.entryExit")
-
 
 
 bot.run(TOKEN)

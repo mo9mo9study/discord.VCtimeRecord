@@ -102,9 +102,9 @@ class ENTRY_EXIT(commands.Cog):
                                 result_studytimes = [minute_duration_time_adjust]
                             result_studytimes.reverse() # 入退室が別なら要素は２個、要素を反転させて先頭が退出日時、同日なら反転させても先頭が退出日時
                             for result_time in result_studytimes:
-                                if result_studytimes.index(result_time) = 0 # 退室時の日時で記録が必要な場合
+                                if result_studytimes.index(result_time) == 0: # 退室時の日時で記録が必要な場合
                                     await self.writeLog(datetime.now(),member.name,msg,str(result_time))
-                                if result_studytimes.index(result_time) = 1 # 入室時の日時で記録が必要な場合
+                                if result_studytimes.index(result_time) == 1: # 入室時の日時で記録が必要な場合
                                     await self.writeLog(last_timedate,member.name,msg,str(result_time))
                                 print(f"書き込みログ：{datetime.now()},{member.name},{msg},{str(result_time)}")
                             print(f'{member.name} : 退室ログをDiscordに出力')

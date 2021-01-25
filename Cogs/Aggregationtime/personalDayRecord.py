@@ -84,6 +84,16 @@ class Personal_DayRecord(commands.Cog):
         return day_result
 
 
+    def create_twitter_embed(self, sendMessage):
+        longUrl = self.createTwitterUrlEncode("https://mo9mo9study.github.io/discord.web/", sendMessage)
+        encodeMessage = self.shorten_url(longUrl, self.googleShortLinksPrefix , self.googleApiKey)
+        #embed = discord.Embed(title="積み上げツイート用",description=sendMessage,color=0xFDB46C)
+        embed = discord.Embed(title="📤積み上げツイート用",description=sendMessage,color=0xFDB46C)
+        #embed.add_field(name="⬇︎下のURLから簡単に積み上げツイートが出来るよ",value=encodeMessage)
+        embed.add_field(name="🦜下のURLから簡単に積み上げツイートが出来るよ",value=encodeMessage)
+        return embed
+
+
     @commands.group(invoke_without_command=True)
     async def result_d(self, ctx):
         #当日分の日次集計
@@ -96,10 +106,11 @@ class Personal_DayRecord(commands.Cog):
             strtoday = datetime.strftime(today, '%Y-%m-%d')
             sum_study_time = self.aggregate_day_users_record(name, strtoday)
             sendMessage = self.compose_user_record(name, strtoday, sum_study_time)
-            longUrl = self.createTwitterUrlEncode("https://mo9mo9study.github.io/discord.web/", sendMessage)
-            encodeMessage = self.shorten_url(longUrl, self.googleShortLinksPrefix , self.googleApiKey)
-            embed = discord.Embed(title="積み上げツイート用",description=sendMessage,color=0xFDB46C)
-            embed.add_field(name="⬇︎下のURLから簡単に積み上げツイートが出来るよ",value=encodeMessage)
+            #longUrl = self.createTwitterUrlEncode("https://mo9mo9study.github.io/discord.web/", sendMessage)
+            #encodeMessage = self.shorten_url(longUrl, self.googleShortLinksPrefix , self.googleApiKey)
+            #embed = discord.Embed(title="積み上げツイート用",description=sendMessage,color=0xFDB46C)
+            #embed.add_field(name="⬇︎下のURLから簡単に積み上げツイートが出来るよ",value=encodeMessage)
+            embed = self.create_twitter_embed(sendMessage)
             sendmsg = await ctx.send(embed=embed)
             await sendmsg.add_reaction("<:otsukaresama:757813789952573520>")
         else:

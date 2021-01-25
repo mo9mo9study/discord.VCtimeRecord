@@ -1,4 +1,5 @@
 from datetime import date, datetime, timedelta
+import re
 
 import discord
 from discord.ext import commands
@@ -74,13 +75,31 @@ class Personal_WeekRecord(commands.Cog):
         return sum_studytime
 
     def addembed_studytimebar(self, embed, targettime, weekstudymtime):
-        weekstadyhtime = int(weekstudymtime) // 60
-        bar = str(tqdm(initial=weekstadyhtime, total=int(targettime), ncols=77, desc="[達成度]" , bar_format="{desc}{percentage:3.0f}%|{bar}|\n--->現在の積み上げ：{n}h\n--->週の目標時間　：{total}h",))
+        weekstudyhtime = int(weekstudymtime) // 60
+        if weekstudyhtime > int(targettime): # 勉強時間/目標時間が100%を超えた場合の処理
+            bar = str(tqdm(
+                initial=weekstudyhtime, 
+                total=weekstudyhtime, 
+                ncols=77, desc="[達成度]" , 
+                bar_format="{desc}{percentage:3.0f}%|{bar}|\n--->現在の積み上げ：{n}h\n--->週の目標時間　：{total}h"
+                ))
+            # 文字列の末尾の目標時間を以下の変数で置換
+            bar = re.sub(rf"{str(weekstudyhtime)}h$", f"{str(targettime)}h", bar)
+        else: # 勉強時間/目標時間が100%未満の場合の処理
+            bar = str(tqdm(
+                initial=weekstudyhtime, 
+                total=int(targettime), 
+                ncols=77, desc="[達成度]", 
+                bar_format="{desc}{percentage:3.0f}%|{bar}|\n--->現在の積み上げ：{n}h\n--->週の目標時間　：{total}h"
+                ))
         bar = bar.replace(" ", "", 2)
         bar = bar.replace(" ", "----")
         embed.add_field(name=f"📊目標設定( {targettime}時間 )" ,value=bar, inline=False)
         return embed
 
+    def strfembed(self, str):
+        embed = discord.Embed(title=str)
+        return embed
 
     @commands.group(invoke_without_command=True)
     async def result_w(self, ctx, *args):
@@ -95,11 +114,13 @@ class Personal_WeekRecord(commands.Cog):
             if args: # タプルが空かどうか判定
                 if args[0].isdigit(): # 以下、目標時間の引数（int）がある場合
                     embed = self.addembed_studytimebar(embed, args[0], sum_studytime)
-                    await ctx.channel.send(embed=embed)
-                else:
-                    await ctx.channel.send("引数がおかしい")
-            else:
-                await ctx.channel.send(embed=embed)
+                    sendmsg = await ctx.channel.send(embed=embed)
+                    await sendmsg.add_reaction("<:otsukaresama:757813789952573520>")
+                else: # 引数が数字でない場合
+                    await ctx.channel.send(embed=self.strfembed(f"[ {args[0]} ]は無効な引数です。数字を指定してください"))
+            else: # 引数が含まれていない場合
+                sendmsg = await ctx.channel.send(embed=embed)
+                await sendmsg.add_reaction("<:otsukaresama:757813789952573520>")
         else:
             await ctx.send("[ " + ctx.subcommand_passed + " ]は無効な引数です")
 
@@ -114,11 +135,13 @@ class Personal_WeekRecord(commands.Cog):
         if args: # タプルが空かどうか判定
             if args[0].isdigit(): # 以下、目標時間の引数（int）がある場合
                 embed = self.addembed_studytimebar(embed, args[0], sum_studytime)
-                await ctx.channel.send(embed=embed)
-            else:
-                await ctx.channel.send("引数がおかしい")
-        else:
-            await ctx.channel.send(embed=embed)
+                sendmsg = await ctx.channel.send(embed=embed)
+                await sendmsg.add_reaction("<:otsukaresama:757813789952573520>")
+            else: # 引数が数字でない場合
+                await ctx.channel.send(embed=self.strfembed(f"[ {args[0]} ]は無効な引数です。数字を指定してください"))
+        else: # 引数が含まれていない場合
+            sendmsg = await ctx.channel.send(embed=embed)
+            await sendmsg.add_reaction("<:otsukaresama:757813789952573520>")
 
 
 def setup(bot):

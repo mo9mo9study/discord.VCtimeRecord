@@ -87,8 +87,10 @@ class Personal_DayRecord(commands.Cog):
     def create_twitter_embed(self, sendMessage):
         longUrl = self.createTwitterUrlEncode("https://mo9mo9study.github.io/discord.web/", sendMessage)
         encodeMessage = self.shorten_url(longUrl, self.googleShortLinksPrefix , self.googleApiKey)
-        embed = discord.Embed(title="積み上げツイート用",description=sendMessage,color=0xFDB46C)
-        embed.add_field(name="⬇︎下のURLから簡単に積み上げツイートが出来るよ",value=encodeMessage)
+        #embed = discord.Embed(title="積み上げツイート用",description=sendMessage,color=0xFDB46C)
+        embed = discord.Embed(title="📤積み上げツイート用",description=sendMessage,color=0xFDB46C)
+        #embed.add_field(name="⬇︎下のURLから簡単に積み上げツイートが出来るよ",value=encodeMessage)
+        embed.add_field(name="🦜下のURLから簡単に積み上げツイートが出来るよ",value=encodeMessage)
         return embed
 
 

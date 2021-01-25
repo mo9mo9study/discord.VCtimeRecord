@@ -6,6 +6,7 @@ import asyncio
 import urllib.parse
 import json
 import requests
+from tqdm import tqdm
 
 from .weekAggregate import Week_Aggregate
 from .personalDayRecord import Personal_DayRecord
@@ -72,10 +73,17 @@ class Personal_WeekRecord(commands.Cog):
             sum_studytime += int(log.split(",")[-1])
         return sum_studytime
 
+    def addembed_studytimebar(self, embed, targettime, weekstudymtime):
+        weekstadyhtime = int(weekstudymtime) // 60
+        bar = str(tqdm(initial=weekstadyhtime, total=int(targettime), ncols=77, desc="[達成度]" , bar_format="{desc}{percentage:3.0f}%|{bar}|\n--->現在の積み上げ：{n}h\n--->週の目標時間　：{total}h",))
+        bar = bar.replace(" ", "", 2)
+        bar = bar.replace(" ", "----")
+        embed.add_field(name=f"📊目標設定( {targettime}時間 )" ,value=bar, inline=False)
+        return embed
 
 
     @commands.group(invoke_without_command=True)
-    async def result_w(self, ctx):
+    async def result_w(self, ctx, *args):
         if ctx.subcommand_passed is None:
             username = ctx.author.name
             week_days, desc_week = self.getweek_days()
@@ -83,20 +91,34 @@ class Personal_WeekRecord(commands.Cog):
             sendmessage = self.format_userrecord(username, desc_week, sum_studytime, "今週の振り返り")
             print(sendmessage)
             embed = Personal_DayRecord(self.bot).create_twitter_embed(sendmessage)
-            await ctx.channel.send(embed=embed)
+            print(args)
+            if args: # タプルが空かどうか判定
+                if args[0].isdigit(): # 以下、目標時間の引数（int）がある場合
+                    embed = self.addembed_studytimebar(embed, args[0], sum_studytime)
+                    await ctx.channel.send(embed=embed)
+                else:
+                    await ctx.channel.send("引数がおかしい")
+            else:
+                await ctx.channel.send(embed=embed)
         else:
             await ctx.send("[ " + ctx.subcommand_passed + " ]は無効な引数です")
 
-
     @result_w.command()
-    async def ago(self, ctx):
+    async def ago(self, ctx, *args):
         username = ctx.author.name
         lastweek_days, desc_lastweek = self.getlastweek_days()
         sum_studytime = self.aggregate_user_record(username, lastweek_days)
         sendmessage = self.format_userrecord(username, desc_lastweek, sum_studytime, "先週の振り返り")
         print(sendmessage)
         embed = Personal_DayRecord(self.bot).create_twitter_embed(sendmessage)
-        await ctx.channel.send(embed=embed)
+        if args: # タプルが空かどうか判定
+            if args[0].isdigit(): # 以下、目標時間の引数（int）がある場合
+                embed = self.addembed_studytimebar(embed, args[0], sum_studytime)
+                await ctx.channel.send(embed=embed)
+            else:
+                await ctx.channel.send("引数がおかしい")
+        else:
+            await ctx.channel.send(embed=embed)
 
 
 def setup(bot):

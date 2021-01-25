@@ -1,7 +1,7 @@
 from discord.ext import commands,tasks
 import discord
 import asyncio
-from datetime import datetime
+from datetime import datetime, date
 
 from .weekAggregate import Week_Aggregate
 
@@ -22,7 +22,7 @@ class Cron_Aggregate(commands.Cog):
         if datetime.now().strftime('%H:%M') == "07:30":
             if date.today().weekday() == 0:
                 print(f'週間集計実行日: {datetime.now().strftime("%Y-%m-%d %H:%M")}')
-                week_results = create_result("week")
+                week_results = Week_Aggregate(self.bot).create_result("week")
                 channel = self.bot.get_channel(self.week_channel_id)
                 for week_result in week_results:
                     await channel.send(week_result)
@@ -30,7 +30,7 @@ class Cron_Aggregate(commands.Cog):
         if datetime.now().strftime('%H:%M') == "07:35":
             if datetime.now().strftime('%d') == '01':
                 print(f'月間集計実行日: {datetime.now().strftime("%Y-%m-%d %H:%M")}')
-                month_results = create_result("month")
+                month_results = Week_Aggregate(self.bot).create_result("month")
                 channel = self.bot.get_channel(self.month_channel_id)
                 for month_result in month_results:
                     await channel.send(month_result)

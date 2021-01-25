@@ -76,6 +76,7 @@ class Personal_DayRecord(commands.Cog):
 #今日の積み上げ 
 - 
 -
+
 #もくもくオンライン勉強会 
 [ {day}の勉強時間 ]
 ---> {totalStudyTime}

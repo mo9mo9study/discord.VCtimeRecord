@@ -31,6 +31,15 @@ source venv/bin/activate
 pip3 install -r requirements.txt
 ```
 
+# 必要な認証情報
+1. DiscordBOTの認証情報
+2. Googleのダイナミックリンクの認証情報
+```py
+# ファイルをコピーして必要な認証情報を埋め込む
+cp .env.sample .env
+vi .env
+```
+
 
 --- 以下、旧資料のため修正箇所 ---------------------------------
 # 環境構築
@@ -89,19 +98,6 @@ IDの取得方法
 - チャンネルIDは、ちゃん粘るを右クリック
 [ユーザー/サーバー/メッセージIDはどこで見つけられる？](https://support.discord.com/hc/ja/articles/206346498-%E3%83%A6%E3%83%BC%E3%82%B6%E3%83%BC-%E3%82%B5%E3%83%BC%E3%83%90%E3%83%BC-%E3%83%A1%E3%83%83%E3%82%BB%E3%83%BC%E3%82%B8ID%E3%81%AF%E3%81%A9%E3%81%93%E3%81%A7%E8%A6%8B%E3%81%A4%E3%81%91%E3%82%89%E3%82%8C%E3%82%8B-)
 
-.env
-```
-## Discrod Server ID
-export DISCORD_SEVER_ID=[Server ID]
-## Monitoring target channel ID
-export DISCORD_CHANNEL_ID=[CHANNEL_ID]
-## 勉強スロット当選者投稿用channel ID
-export SLOT_RESULT_CHANNEL_ID=[CHANNEL_ID]
-## 週間勉強集計投稿用channel ID
-export WEEK_RECORD_CHANNEL_ID=[CHANNEL_ID]
-## 月間勉強集計投稿用channel ID
-export MONTH_RECORD_CHANNEL_ID=[CHANNEL_ID]
-```
 
 ## Docker imageをbuild
 discord.study ディレクトリ内で以下コマンドを実行

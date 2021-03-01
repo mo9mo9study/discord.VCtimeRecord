@@ -163,7 +163,7 @@ class Week_Aggregate(commands.Cog):
         elif m in {4, 6, 9, 11}:
             return 30
         elif m in {2}:
-            if y % 4 in 0 and y % 100 != 0 or y % 400:
+            if y % 4 == 0 and (y % 100 != 0 or y % 400 == 0):
                 return 29
             else:
                 return 28

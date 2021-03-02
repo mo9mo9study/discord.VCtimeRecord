@@ -215,8 +215,8 @@ class Week_Aggregate(commands.Cog):
     def compose_users_monthrecord(self, strtoday, days, users_log):
         code_block = "```"
         separate = "====================\n"
-    #    start_message = self.serialize_log("@everyone ")
-        start_message = self.serialize_log("everyone ")
+        start_message = self.serialize_log("@everyone ")
+    #    start_message = self.serialize_log("everyone ")
         start_message += code_block + "\n"
         start_message += self.serialize_log("取得日：", strtoday)
         start_message += self.serialize_log(

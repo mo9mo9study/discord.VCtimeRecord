@@ -14,6 +14,7 @@ class ENTRY_EXIT(commands.Cog):
         self.channel_id = 673006702924136448  # times_supleiades
         self.pretime_dict = {}
         self.NotRecordChannels = "時間記録無"
+        self.now = f" {(datetime.utcnow() + timedelta(hours=9)):%m-%d %H:%M} "
 
     async def writeLog(self,
                        study_dt,
@@ -45,15 +46,17 @@ class ENTRY_EXIT(commands.Cog):
             Studytimelogs.study_dt.desc()).first()
         return obj
 
+    # メッセージを送信
     async def sendstudytimelogmsg(self, member, channel, access,
                                   studytime=None):
-        now = f"{(datetime.utcnow() + timedelta(hours=9)):%m/%d %H:%M}"
-        print(f"[ {now} ] {member.name} {access}ログをDiscordに出力")
+        if self.NotRecordChannels in channel.name:
+            return
+        print(f"[{self.now}] {member.name} {access}ログをDiscordに出力")
         send_channel = self.bot.get_channel(self.channel_id)
         if access == "in":
-            msg = f"[ {now} ]  {member.name}  joined the  {channel.name}."
+            msg = f"[{self.now}]  {member.name}  joined the  {channel.name}."
         elif access == "out":
-            msg = f"[ {now} ]  {member.name}  Study time:  {studytime} /分"
+            msg = f"[{self.now}]  {member.name}  Study time  {studytime} /分"
         await send_channel.send(msg)
 
     @commands.Cog.listener()
@@ -63,21 +66,20 @@ class ENTRY_EXIT(commands.Cog):
         if member.bot:
             print(f'{member.name} : BOTは記録しません')
             return
-        now = datetime.now()
-        print(f"[{now}]{member.name} : {before.channel}/{after.channel}")
+        print(f"[{self.now}]{member.name} : {before.channel}/{after.channel}")
         study_dt = datetime.utcnow() + timedelta(hours=9)
-        # VC入室時 or 勉強記録なし--->勉強記録あり
+    # VC入室時 or 勉強記録なし--->勉強記録あり
         if (before.channel is None
             or self.NotRecordChannels in before.channel.name
-                and before.channel != after.channel):
+            and before.channel != after.channel
+                and after.channel is not None):
             channel = after.channel
             access = "in"
-
             self.pretime_dict['beforetime'] = datetime.now()
             # DBに入室記録を挿入、Discordにメッセージを出力
             await self.writeLog(study_dt, member, channel, access)
             await self.sendstudytimelogmsg(member, channel, access)
-        # VC退室時 or 勉強記録あり--->勉強記録なし
+    # VC退室時 or 勉強記録あり--->勉強記録なし
         elif (after.channel is None
               or self.NotRecordChannels in after.channel.name
               and before.channel != after.channel):

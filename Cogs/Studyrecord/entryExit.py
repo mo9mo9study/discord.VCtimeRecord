@@ -13,7 +13,7 @@ class ENTRY_EXIT(commands.Cog):
         # self.channel_id = 618081921611726851  # 勉強記録
         self.channel_id = 673006702924136448  # times_supleiades
         self.pretime_dict = {}
-        self.NotRecordChannels = "時間記録無"
+        self.NotRecordChannels = "記録無"
 
     async def writeLog(self,
                        study_dt,

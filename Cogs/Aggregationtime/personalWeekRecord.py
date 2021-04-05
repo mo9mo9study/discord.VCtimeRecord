@@ -16,7 +16,7 @@ class Personal_WeekRecord(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.guild_id = 603582455756095488
-        self.channel_id = 828645803131404410  # times_supleiades
+        self.channel_id = 828645803131404410
 
     # 先週の月〜日までの日付を取得
     def getlastweek_days(self):
@@ -49,8 +49,7 @@ class Personal_WeekRecord(commands.Cog):
         totalStudyTime = str(Week_Aggregate(
             self.bot).minutes2time(studytime)).strip()
         # DBからテンプレートテキストを取得して置換する処理に変更する
-        week_result = f'''
-#{title}
+        week_result = f'''#{title}
 -
 -
 
@@ -114,13 +113,26 @@ class Personal_WeekRecord(commands.Cog):
         self.channel = self.bot.get_guild(
             self.guild_id).get_channel(self.channel_id)
         # await self.channel.purge()
-        embed = discord.Embed(title="あなたの今週の勉強記録の集計を出力します",
-                              description="- 集計結果をDMに送ります")
-        embed.add_field(name=" 👇 使い方",
-                        value="（超簡単）このメッセージにリアクションをするだけ‼️ ")
+        embed = discord.Embed(title="あなたの今週の勉強記録の集計してDMに送信します",
+                              description="👇 使い方\n（超簡単）このメッセージにリアクションをするだけ‼️")
+        embed.add_field(name="1⃣：",
+                        value="- 今週の勉強集計",
+                        inline=False)
+        embed.add_field(name="2⃣：",
+                        value="- 先週の勉強集計",
+                        inline=False)
+        embed.add_field(name="3⃣：",
+                        value="- 今週の勉強集計（進捗割合付）",
+                        inline=False)
+        embed.add_field(name="4⃣：",
+                        value="- 先週の勉強集計（進捗割合付）",
+                        inline=False)
         self.message = await self.channel.send(embed=embed)
         self.message_id = self.message.id
-        await self.message.add_reaction("🛎️")
+        await self.message.add_reaction("1⃣")
+        await self.message.add_reaction("2⃣")
+        await self.message.add_reaction("3⃣")
+        await self.message.add_reaction("4⃣")
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
@@ -133,14 +145,23 @@ class Personal_WeekRecord(commands.Cog):
             dm = await member.create_dm()
         # --------------今週〜今日までの週間集計---------------------
         if payload.message_id == self.message_id:
-            week_days, desc_week = self.getweek_days()
-            sum_studytime = self.aggregate_user_record(member, week_days)
-            sendmessage = self.format_userrecord(
-                member, desc_week, sum_studytime, "今週の振り返り")
-            embed = Personal_DayRecord(
-                self.bot).create_twitter_embed(sendmessage)
-            # embed不足
-            # embed = self.addembed_studytimebar(embed, args[0], sum_studytime)
+            if payload.emoji.name == "1⃣":
+                week_days, desc_week = self.getweek_days()
+                sum_studytime = self.aggregate_user_record(member, week_days)
+                sendmessage = self.format_userrecord(
+                    member, desc_week, sum_studytime, "今週の振り返り")
+                embed = Personal_DayRecord(
+                    self.bot).create_twitter_embed(sendmessage)
+                # embed不足
+                # embed = self.addembed_studytimebar(embed,
+                #                                    args[0],
+                #                                    sum_studytime)
+            if payload.emoji.name == "2⃣":
+                embed = discord.Embed(title="工事中")
+            if payload.emoji.name == "3⃣":
+                embed = discord.Embed(title="工事中")
+            if payload.emoji.name == "4⃣":
+                embed = discord.Embed(title="工事中")
             await dm.send(embed=embed)
             # --------------DBerror処理--------------
             # else:

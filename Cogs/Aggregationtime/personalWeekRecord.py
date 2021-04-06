@@ -73,7 +73,7 @@ class Personal_WeekRecord(commands.Cog):
             Studytimelogs.member_id == member.id,
             Studytimelogs.access == "out",
             Studytimelogs.studytime_min.isnot(None)).first()
-        return obj[0]
+        return int(obj[0])
 
     def addembed_studytimebar(self, embed, targettime, weekstudymtime):
         weekstudyhtime = int(weekstudymtime) // 60
@@ -114,7 +114,7 @@ class Personal_WeekRecord(commands.Cog):
 
     def embedweekresult(self, member) -> Union[discord.embeds.Embed, int]:
         week_days, desc_week = self.getweek_days()
-        sum_studytime = int(self.aggregate_user_record(member, week_days))
+        sum_studytime = self.aggregate_user_record(member, week_days)
         sendmessage = self.format_userrecord(
             member, desc_week, sum_studytime, "今週の振り返り")
         return Personal_DayRecord(
@@ -122,7 +122,7 @@ class Personal_WeekRecord(commands.Cog):
 
     def embedlastweekresult(self, member) -> Union[discord.embeds.Embed, int]:
         lastweek_days, desc_lastweek = self.getlastweek_days()
-        sum_studytime = int(self.aggregate_user_record(member, lastweek_days))
+        sum_studytime = self.aggregate_user_record(member, lastweek_days)
         sendmessage = self.format_userrecord(
             member, desc_lastweek, sum_studytime, "先週の振り返り")
         return Personal_DayRecord(

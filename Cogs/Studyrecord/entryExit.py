@@ -11,7 +11,7 @@ class ENTRY_EXIT(commands.Cog):
         self.bot = bot
         self.guild_id = 603582455756095488  # もくもくOnline勉強会
         # self.channel_id = 618081921611726851  # 勉強記録
-        self.channel_id = 673006702924136448  # times_supleiades
+        self.channel_id = 828645803131404410
         self.pretime_dict = {}
         self.NotRecordChannels = "記録無"
 
@@ -93,8 +93,7 @@ class ENTRY_EXIT(commands.Cog):
                 duration_time = dtBeforetime - datetime.now()
                 duration_time_adjust = int(duration_time.total_seconds()) * -1
                 print(f"dutation_time_adjust: {duration_time_adjust}")
-#                if duration_time_adjust >= 60:  # 1分以上は記録
-                if duration_time_adjust >= 1:  # 1分以上は記録
+                if duration_time_adjust >= 60:  # 1分以上は記録
                     print(f'{member.name} : 60sec以上')
                     minute_duration_time_adjust = int(
                         duration_time_adjust) // 60

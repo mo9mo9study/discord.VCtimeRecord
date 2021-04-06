@@ -24,9 +24,9 @@ class Personal_WeekRecord(commands.Cog):
         weeknumber = [0, 1, 2, 3, 4, 5, 6]
         lastweek_days = []
         for i in weeknumber:
-            lastweek_day = date.today()
-            - timedelta(days=datetime.now().weekday()) + \
-                timedelta(days=i, weeks=-1)
+            lastweek_day = date.today() \
+                - timedelta(days=datetime.now().weekday()) \
+                + timedelta(days=i, weeks=-1)
             lastweek_days.append(lastweek_day.strftime("%Y-%m-%d"))
         lastsunday = datetime.now().strptime(
             lastweek_days[-1], "%Y-%m-%d").strftime("%m-%d")
@@ -39,10 +39,15 @@ class Personal_WeekRecord(commands.Cog):
         weeknumber = list(range(date.today().weekday() + 1))
         week_days = []
         for i in weeknumber:
-            week_day = date.today()
-            - timedelta(days=datetime.now().weekday()) + timedelta(days=i)
+            print(i)
+            week_day = date.today() \
+                - timedelta(days=datetime.now().weekday()) + timedelta(days=i)
             week_days.append(week_day.strftime("%Y-%m-%d"))
+            print(week_day)
         now_date = datetime.now().strftime("%m-%d")
+        print(weeknumber)
+        print(week_days)
+        print(week_days[0])
         desc_week = f"{week_days[0]}〜{now_date}"
         return week_days, desc_week
 
@@ -154,19 +159,21 @@ class Personal_WeekRecord(commands.Cog):
         if payload.member.bot:
             return
         if payload.channel_id == self.channel_id:
+            embed = ""  # 190行目の対策、想定しないスタンプが押された時にembedが送信されないため
             member = payload.member.guild.get_member(
                 payload.member.id)  # DM用のMemberオブジェクト生成
             dm = await member.create_dm()
         # --------------今週〜今日までの週間集計---------------------
         if payload.message_id == self.message_id:
+            select_msg = await self.channel.fetch_message(payload.message_id)
             # --------------今週の勉強集計---------------------
             if payload.emoji.name == "1⃣":
                 embed, sum_studytime = self.embedweekresult(member)
             # --------------先週の勉強集計---------------------
-            if payload.emoji.name == "2⃣":
+            elif payload.emoji.name == "2⃣":
                 embed, sum_studytime = self.embedlastweekresult(member)
             # --------------今週の勉強集計（進捗割合付）---------------------
-            if payload.emoji.name == "3⃣":
+            elif payload.emoji.name == "3⃣":
                 embed, sum_studytime = self.embedweekresult(member)
                 embed = self.addembed_studytimebar(embed,
                                                    "30",
@@ -174,14 +181,19 @@ class Personal_WeekRecord(commands.Cog):
                 embed.add_field(name="🛠️工事中",
                                 value="現在、週の目標を３０時間に固定しています")
             # --------------先週の勉強集計（進捗割合付）---------------------
-            if payload.emoji.name == "4⃣":
+            elif payload.emoji.name == "4⃣":
                 embed, sum_studytime = self.embedlastweekresult(member)
                 embed = self.addembed_studytimebar(embed,
                                                    "30",
                                                    sum_studytime)
                 embed.add_field(name="🛠️工事中",
                                 value="現在、週の目標を３０時間に固定しています")
-            await dm.send(embed=embed)
+            else:
+                msg = await self.channel.send("1⃣,2⃣,3⃣,4⃣のスタンプをクリック下さい")
+                await msg.delete(delay=3)
+            await select_msg.remove_reaction(payload.emoji, payload.member)
+            if embed:
+                await dm.send(embed=embed)
             # --------------DBerror処理--------------
             # else:
             #    msg = await self.channel.send("今週の勉強記録が見つかりませんでした")

@@ -1,5 +1,6 @@
 from datetime import date, datetime, timedelta
 import re
+from typing import Union
 
 import discord
 from discord.ext import commands
@@ -16,7 +17,7 @@ class Personal_WeekRecord(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.guild_id = 603582455756095488
-        self.channel_id = 828645803131404410
+        self.channel_id = 673006702924136448
 
     # 先週の月〜日までの日付を取得
     def getlastweek_days(self):
@@ -106,7 +107,21 @@ class Personal_WeekRecord(commands.Cog):
         embed = discord.Embed(title=str)
         return embed
 
-# ----------------------------------------------------------------
+    def embedweekresult(self, member) -> Union[discord.embeds.Embed, int]:
+        week_days, desc_week = self.getweek_days()
+        sum_studytime = int(self.aggregate_user_record(member, week_days))
+        sendmessage = self.format_userrecord(
+            member, desc_week, sum_studytime, "今週の振り返り")
+        return Personal_DayRecord(
+            self.bot).create_twitter_embed(sendmessage), sum_studytime
+
+    def embedlastweekresult(self, member) -> Union[discord.embeds.Embed, int]:
+        lastweek_days, desc_lastweek = self.getlastweek_days()
+        sum_studytime = int(self.aggregate_user_record(member, lastweek_days))
+        sendmessage = self.format_userrecord(
+            member, desc_lastweek, sum_studytime, "先週の振り返り")
+        return Personal_DayRecord(
+            self.bot).create_twitter_embed(sendmessage), sum_studytime
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -138,92 +153,39 @@ class Personal_WeekRecord(commands.Cog):
     async def on_raw_reaction_add(self, payload):
         if payload.member.bot:
             return
-        print(payload.channel_id)
         if payload.channel_id == self.channel_id:
             member = payload.member.guild.get_member(
                 payload.member.id)  # DM用のMemberオブジェクト生成
             dm = await member.create_dm()
         # --------------今週〜今日までの週間集計---------------------
         if payload.message_id == self.message_id:
+            # --------------今週の勉強集計---------------------
             if payload.emoji.name == "1⃣":
-                week_days, desc_week = self.getweek_days()
-                sum_studytime = self.aggregate_user_record(member, week_days)
-                sendmessage = self.format_userrecord(
-                    member, desc_week, sum_studytime, "今週の振り返り")
-                embed = Personal_DayRecord(
-                    self.bot).create_twitter_embed(sendmessage)
-                # embed不足
-                # embed = self.addembed_studytimebar(embed,
-                #                                    args[0],
-                #                                    sum_studytime)
+                embed, sum_studytime = self.embedweekresult(member)
+            # --------------先週の勉強集計---------------------
             if payload.emoji.name == "2⃣":
-                embed = discord.Embed(title="工事中")
+                embed, sum_studytime = self.embedlastweekresult(member)
+            # --------------今週の勉強集計（進捗割合付）---------------------
             if payload.emoji.name == "3⃣":
-                embed = discord.Embed(title="工事中")
+                embed, sum_studytime = self.embedweekresult(member)
+                embed = self.addembed_studytimebar(embed,
+                                                   "30",
+                                                   sum_studytime)
+                embed.add_field(name="🛠️工事中",
+                                value="現在、週の目標を３０時間に固定しています")
+            # --------------先週の勉強集計（進捗割合付）---------------------
             if payload.emoji.name == "4⃣":
-                embed = discord.Embed(title="工事中")
+                embed, sum_studytime = self.embedlastweekresult(member)
+                embed = self.addembed_studytimebar(embed,
+                                                   "30",
+                                                   sum_studytime)
+                embed.add_field(name="🛠️工事中",
+                                value="現在、週の目標を３０時間に固定しています")
             await dm.send(embed=embed)
             # --------------DBerror処理--------------
             # else:
             #    msg = await self.channel.send("今週の勉強記録が見つかりませんでした")
             #    await self.time_sleep(msg)
-
-
-# ----------------------------------------------------------------
-#
-#    @commands.group(invoke_without_command=True)
-#    async def result_w(self, ctx, *args):
-#        if ctx.subcommand_passed is None:
-#            week_days, desc_week = self.getweek_days()
-#            sum_studytime = self.aggregate_user_record(member, week_days)
-#            sendmessage = self.format_userrecord(username,
-#                                desc_week, sum_studytime, "今週の振り返り")
-#            print(sendmessage)
-#            embed = Personal_DayRecord(self.bot)
-#                .create_twitter_embed(sendmessage)
-#            print(args)
-#            if args: # タプルが空かどうか判定
-#                if args[0].isdigit(): # 以下、目標時間の引数（int）がある場合
-#                    embed = self.addembed_studytimebar(embed,
-#                                                       args[0],
-#                                                       sum_studytime)
-#                    sendmsg = await ctx.channel.send(embed=embed)
-# await sendmsg.add_reaction("<:otsukaresama:757813789952573520>")
-#                else: # 引数が数字でない場合
-#                    await ctx.channel.send(embed=
-#                        self.strfembed(f"""
-# [ {args[0]} ]は無効な引数です。数字を指定してください
-# """))
-#            else: # 引数が含まれていない場合
-#                sendmsg = await ctx.channel.send(embed=embed)
-# await sendmsg.add_reaction("<:otsukaresama:757813789952573520>")
-#        else:
-#            await ctx.send("[ " + ctx.subcommand_passed + " ]は無効な引数です")
-#
-#    @result_w.command()
-#    async def ago(self, ctx, *args):
-#        member = ctx.author.name
-#        lastweek_days, desc_lastweek = self.getlastweek_days()
-#        sum_studytime = self.aggregate_user_record(username, lastweek_days)
-#        sendmessage = self.format_userrecord(username,
-#                            desc_lastweek, sum_studytime, "先週の振り返り")
-#        print(sendmessage)
-#        embed = Personal_DayRecord(self.bot).create_twitter_embed(sendmessage)
-#        if args: # タプルが空かどうか判定
-#            if args[0].isdigit(): # 以下、目標時間の引数（int）がある場合
-#                embed = self.addembed_studytimebar(embed,
-#                                                   args[0],
-#                                                   sum_studytime)
-#                sendmsg = await ctx.channel.send(embed=embed)
-#                await sendmsg.add_reaction("<:otsukaresama:757813789952573520>")  # noqa: E501
-#            else: # 引数が数字でない場合
-#                await ctx.channel.send(embed=
-#                    self.strfembed(f"""
-# [ {args[0]} ]は無効な引数です。数字を指定してください
-# """))
-#        else: # 引数が含まれていない場合
-#            sendmsg = await ctx.channel.send(embed=embed)
-#            await sendmsg.add_reaction("<:otsukaresama:757813789952573520>")
 
 
 def setup(bot):

@@ -5,7 +5,7 @@ from typing import Union
 import discord
 from discord.ext import commands
 from tqdm import tqdm
-from sqlalchemy import func as F
+from sqlalchemy import func as F, extract, and_
 
 from .weekAggregate import Week_Aggregate
 from .personalDayRecord import Personal_DayRecord
@@ -27,10 +27,10 @@ class Personal_WeekRecord(commands.Cog):
             lastweek_day = date.today() \
                 - timedelta(days=datetime.now().weekday()) \
                 + timedelta(days=i, weeks=-1)
-            lastweek_days.append(lastweek_day.strftime("%Y-%m-%d"))
-        lastsunday = datetime.now().strptime(
-            lastweek_days[-1], "%Y-%m-%d").strftime("%m-%d")
-        desc_lastweek = f"{lastweek_days[0]}〜{lastsunday}"
+            lastweek_days.append(lastweek_day)
+        startrange_strdt = lastweek_days[0].strftime("%Y-%m-%d")
+        endrange_strdt = lastweek_days[-1].strftime("%m-%d")
+        desc_lastweek = f"{startrange_strdt}〜{endrange_strdt}"
         return lastweek_days, desc_lastweek
 
     # 今週の月〜今日までの日付を取得
@@ -42,13 +42,10 @@ class Personal_WeekRecord(commands.Cog):
             print(i)
             week_day = date.today() \
                 - timedelta(days=datetime.now().weekday()) + timedelta(days=i)
-            week_days.append(week_day.strftime("%Y-%m-%d"))
-            print(week_day)
-        now_date = datetime.now().strftime("%m-%d")
-        print(weeknumber)
-        print(week_days)
-        print(week_days[0])
-        desc_week = f"{week_days[0]}〜{now_date}"
+            week_days.append(week_day)
+        startrangge_strdt = week_days[0].strftime("%Y-%m-%d")
+        endrange_strdt = datetime.now().strftime("%m-%d")
+        desc_week = f"{startrangge_strdt}〜{endrange_strdt}"
         return week_days, desc_week
 
     def format_userrecord(self, member, day, studytime, title):
@@ -66,14 +63,26 @@ class Personal_WeekRecord(commands.Cog):
         '''
         return week_result
 
-    def aggregate_user_record(self, member, week_days) -> int:
+    def aggregate_user_record(self, member, startrange_dt,
+                              endrange_dt) -> int:
         # ユーザーの勉強記録を取得
         session = Studytimelogs.session()
+        startrange = startrange_dt
+        endrange = endrange_dt
         obj = session.query(F.sum(Studytimelogs.studytime_min)).filter(
             Studytimelogs.member_id == member.id,
             Studytimelogs.access == "out",
+            and_(extract('year', Studytimelogs.study_dt) == startrange.year,
+                 extract('month', Studytimelogs.study_dt) == startrange.month,
+                 extract('day', Studytimelogs.study_dt) >= startrange.day),
+            and_(extract('year', Studytimelogs.study_dt) == endrange.year,
+                 extract('month', Studytimelogs.study_dt) == endrange.month,
+                 extract('day', Studytimelogs.study_dt) <= endrange.day),
             Studytimelogs.studytime_min.isnot(None)).first()
-        return int(obj[0])
+        sum_studytime = obj[0]
+        if isinstance(sum_studytime, type(None)):
+            sum_studytime = 0
+        return sum_studytime
 
     def addembed_studytimebar(self, embed, targettime, weekstudymtime):
         weekstudyhtime = int(weekstudymtime) // 60
@@ -108,13 +117,15 @@ class Personal_WeekRecord(commands.Cog):
             name=f"📊目標設定( {targettime}時間 )", value=bar, inline=False)
         return embed
 
-    def strfembed(self, str):
-        embed = discord.Embed(title=str)
-        return embed
+    async def sendstrfembed(self, title, desc):
+        embed = discord.Embed(title=title, description=desc)
+        await self.dm.send(embed=embed)
 
     def embedweekresult(self, member) -> Union[discord.embeds.Embed, int]:
         week_days, desc_week = self.getweek_days()
-        sum_studytime = self.aggregate_user_record(member, week_days)
+        sum_studytime = self.aggregate_user_record(member,
+                                                   week_days[0],
+                                                   datetime.today())
         sendmessage = self.format_userrecord(
             member, desc_week, sum_studytime, "今週の振り返り")
         return Personal_DayRecord(
@@ -122,7 +133,9 @@ class Personal_WeekRecord(commands.Cog):
 
     def embedlastweekresult(self, member) -> Union[discord.embeds.Embed, int]:
         lastweek_days, desc_lastweek = self.getlastweek_days()
-        sum_studytime = self.aggregate_user_record(member, lastweek_days)
+        sum_studytime = self.aggregate_user_record(member,
+                                                   lastweek_days[0],
+                                                   lastweek_days[-1])
         sendmessage = self.format_userrecord(
             member, desc_lastweek, sum_studytime, "先週の振り返り")
         return Personal_DayRecord(
@@ -162,7 +175,7 @@ class Personal_WeekRecord(commands.Cog):
             embed = ""  # 190行目の対策、想定しないスタンプが押された時にembedが送信されないため
             member = payload.member.guild.get_member(
                 payload.member.id)  # DM用のMemberオブジェクト生成
-            dm = await member.create_dm()
+            self.dm = await member.create_dm()
         # --------------今週〜今日までの週間集計---------------------
         if payload.message_id == self.message_id:
             select_msg = await self.channel.fetch_message(payload.message_id)
@@ -193,7 +206,12 @@ class Personal_WeekRecord(commands.Cog):
                 await msg.delete(delay=3)
             await select_msg.remove_reaction(payload.emoji, payload.member)
             if embed:
-                await dm.send(embed=embed)
+                # DB-ERROR:対象期間の勉強記録がない場合の処理
+                if sum_studytime == 0:
+                    await self.sendstrfembed("ERROR",
+                                             "勉強記録がありません")
+                else:
+                    await self.dm.send(embed=embed)
             # --------------DBerror処理--------------
             # else:
             #    msg = await self.channel.send("今週の勉強記録が見つかりませんでした")

@@ -5,11 +5,9 @@ from typing import Union
 import discord
 from discord.ext import commands
 from tqdm import tqdm
-from sqlalchemy import func as F, extract, and_
 
 from .weekAggregate import Week_Aggregate
 from .personalDayRecord import Personal_DayRecord
-from mo9mo9db.dbtables import Studytimelogs
 
 
 class Personal_WeekRecord(commands.Cog):
@@ -17,7 +15,7 @@ class Personal_WeekRecord(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.guild_id = 603582455756095488
-        self.channel_id = 673006702924136448
+        self.channel_id = 829515424042450984
 
     # 先週の月〜日までの日付を取得
     def getlastweek_days(self):
@@ -63,27 +61,6 @@ class Personal_WeekRecord(commands.Cog):
         '''
         return week_result
 
-    def aggregate_user_record(self, member, startrange_dt,
-                              endrange_dt) -> int:
-        # ユーザーの勉強記録を取得
-        session = Studytimelogs.session()
-        startrange = startrange_dt
-        endrange = endrange_dt
-        obj = session.query(F.sum(Studytimelogs.studytime_min)).filter(
-            Studytimelogs.member_id == member.id,
-            Studytimelogs.access == "out",
-            and_(extract('year', Studytimelogs.study_dt) == startrange.year,
-                 extract('month', Studytimelogs.study_dt) == startrange.month,
-                 extract('day', Studytimelogs.study_dt) >= startrange.day),
-            and_(extract('year', Studytimelogs.study_dt) == endrange.year,
-                 extract('month', Studytimelogs.study_dt) == endrange.month,
-                 extract('day', Studytimelogs.study_dt) <= endrange.day),
-            Studytimelogs.studytime_min.isnot(None)).first()
-        sum_studytime = obj[0]
-        if isinstance(sum_studytime, type(None)):
-            sum_studytime = 0
-        return sum_studytime
-
     def addembed_studytimebar(self, embed, targettime, weekstudymtime):
         weekstudyhtime = int(weekstudymtime) // 60
         if weekstudyhtime > int(targettime):  # 勉強時間/目標時間が100%を超えた場合の処理
@@ -123,9 +100,10 @@ class Personal_WeekRecord(commands.Cog):
 
     def embedweekresult(self, member) -> Union[discord.embeds.Embed, int]:
         week_days, desc_week = self.getweek_days()
-        sum_studytime = self.aggregate_user_record(member,
-                                                   week_days[0],
-                                                   datetime.today())
+        sum_studytime = Personal_DayRecord(self.bot) \
+            .aggregate_user_record(member,
+                                   week_days[0],
+                                   datetime.today())
         sendmessage = self.format_userrecord(
             member, desc_week, sum_studytime, "今週の振り返り")
         return Personal_DayRecord(
@@ -133,9 +111,10 @@ class Personal_WeekRecord(commands.Cog):
 
     def embedlastweekresult(self, member) -> Union[discord.embeds.Embed, int]:
         lastweek_days, desc_lastweek = self.getlastweek_days()
-        sum_studytime = self.aggregate_user_record(member,
-                                                   lastweek_days[0],
-                                                   lastweek_days[-1])
+        sum_studytime = Personal_DayRecord(self.bot) \
+            .aggregate_user_record(member,
+                                   lastweek_days[0],
+                                   lastweek_days[-1])
         sendmessage = self.format_userrecord(
             member, desc_lastweek, sum_studytime, "先週の振り返り")
         return Personal_DayRecord(

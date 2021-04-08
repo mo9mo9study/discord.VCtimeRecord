@@ -37,7 +37,6 @@ class Personal_WeekRecord(commands.Cog):
         weeknumber = list(range(date.today().weekday() + 1))
         week_days = []
         for i in weeknumber:
-            print(i)
             week_day = date.today() \
                 - timedelta(days=datetime.now().weekday()) + timedelta(days=i)
             week_days.append(week_day)

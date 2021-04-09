@@ -17,21 +17,8 @@ class Personal_WeekRecord(commands.Cog):
         self.guild_id = 603582455756095488
         self.channel_id = 829515424042450984
 
-    # 先週の月〜日までの日付を取得
-    def getlastweek_days(self):
-        weeknumber = [0, 1, 2, 3, 4, 5, 6]
-        lastweek_days = []
-        for i in weeknumber:
-            lastweek_day = date.today() \
-                - timedelta(days=datetime.now().weekday()) \
-                + timedelta(days=i, weeks=-1)
-            lastweek_days.append(lastweek_day)
-        startrange_strdt = lastweek_days[0].strftime("%Y-%m-%d")
-        endrange_strdt = lastweek_days[-1].strftime("%m-%d")
-        desc_lastweek = f"{startrange_strdt}〜{endrange_strdt}"
-        return lastweek_days, desc_lastweek
-
     # 今週の月〜今日までの日付を取得
+
     def getweek_days(self):
         # 月曜(0)から今日の曜日までの曜日を示す数字を配列に格納
         weeknumber = list(range(date.today().weekday() + 1))
@@ -109,7 +96,8 @@ class Personal_WeekRecord(commands.Cog):
             self.bot).create_twitter_embed(sendmessage), sum_studytime
 
     def embedlastweekresult(self, member) -> Union[discord.embeds.Embed, int]:
-        lastweek_days, desc_lastweek = self.getlastweek_days()
+        lastweek_days, desc_lastweek = Week_Aggregate(
+            self.bot).self.getlastweek_days()
         sum_studytime = Personal_DayRecord(self.bot) \
             .aggregate_user_record(member,
                                    lastweek_days[0],

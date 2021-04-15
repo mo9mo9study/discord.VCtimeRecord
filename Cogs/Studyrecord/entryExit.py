@@ -10,8 +10,7 @@ class ENTRY_EXIT(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.guild_id = 603582455756095488  # もくもくOnline勉強会
-        # self.channel_id = 618081921611726851  # 勉強記録
-        self.channel_id = 828645803131404410
+        self.channel_id = 618081921611726851  # 勉強記録
         self.pretime_dict = {}
         self.NotRecordChannels = "記録無"
 

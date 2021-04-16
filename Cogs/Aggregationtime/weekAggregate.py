@@ -1,10 +1,12 @@
 import os
 import re
-import magic
 from datetime import datetime, timedelta, date
 
 from discord.ext import commands
 from dateutil.relativedelta import relativedelta
+from sqlalchemy import func as F, extract, and_, desc
+
+from mo9mo9db.dbtables import Studytimelogs
 
 
 class Week_Aggregate(commands.Cog):
@@ -13,8 +15,6 @@ class Week_Aggregate(commands.Cog):
         self.bot = bot
         self.guild_id = 603582455756095488  # もくもくOnline勉強会
         self.channel_id = 683936366756888616  # 週間勉強集計
-        self.LOG_DIR = os.path.join(
-            "/home/centos/repos/discord.VCtimeRecord/entry_exit/", "timelog")
         self.MAX_SEND_MESSAGE_LENGTH = 2000
 
     def minutes2time(self, m):
@@ -23,40 +23,18 @@ class Week_Aggregate(commands.Cog):
         result_study_time = f"{str(hour)}時間{str(minute)}分"
         return result_study_time
 
-    # [検討]ここをいつ起動しても先週の月〜日を指す方法に変更するのもあり
-    # 現在は、1日前から遡って7日分取得する方法
-
-    def arr_weekdays(self, today):
-        days = []
-        for i in reversed(range(1, 8)):
-            #    for i in reversed(range(2, 9)): # 火曜日用
-            day = today - timedelta(days=i)
-            days.append(datetime.strftime(day, '%Y-%m-%d'))
-        return days
-
-    def exclude_non_txt(self, file_list):
-        file_list_result = list(file_list)
-        print('対象ファイル数 : ', len(file_list))
-        print('--- 対象ファイルの[名前/ファイルタイプ]と[対象から除外か否か]の処理結果を出力 ---')
-        for file in file_list:
-            file_type = magic.from_file(file, mime=True)
-            # 確認用
-            print(f'\n python-magic: {file_type} --> [file]: {file}', end='')
-            if file_type != 'text/plain':
-                print('-->  [ remove ]', end='')  # 確認用
-                file_list_result.remove(file)
-        print('\n--- (除外対象)ファイルタイプが[text/plain]でない対象 --- ')
-        result = list(set(file_list) - set(file_list_result))
-        for x in result:
-            print(x)
-        print('--- end --- ')
-        return file_list_result
-
-    def read_file(self, file_path):
-        with open(file_path, "r", encoding="utf-8") as f:
-            lines = f.readlines()
-        lines_strip = [line.strip() for line in lines]
-        return lines_strip
+    def getlastweek_days(self):
+        weeknumber = [0, 1, 2, 3, 4, 5, 6]
+        lastweek_days = []
+        for i in weeknumber:
+            lastweek_day = date.today() \
+                - timedelta(days=datetime.now().weekday()) \
+                + timedelta(days=i, weeks=-1)
+            lastweek_days.append(lastweek_day)
+        startrange_strdt = lastweek_days[0].strftime("%Y-%m-%d")
+        endrange_strdt = lastweek_days[-1].strftime("%m-%d")
+        desc_lastweek = f"{startrange_strdt}〜{endrange_strdt}"
+        return lastweek_days, desc_lastweek
 
     def serialize_log(self, *args, end="\n"):
         context = "".join(map(str, args)) + end
@@ -79,6 +57,31 @@ class Week_Aggregate(commands.Cog):
             "　合計勉強時間：",
             str(self.minutes2time(sum_study_time)))
         return userWeekResult
+
+    def aggregate_user_record(self, member, startrange_dt,
+                              endrange_dt) -> int:
+        # ユーザーの勉強記録を取得
+        session = Studytimelogs.session()
+        startrange = startrange_dt
+        endrange = endrange_dt
+        obj = session.query(Studytimelogs.member_id,
+                            F.sum(Studytimelogs.studytime_min)) \
+            .filter(
+            Studytimelogs.access == "out",
+            Studytimelogs.excluded_record.isnot(True),
+            and_(extract('year', Studytimelogs.study_dt) == startrange.year,
+                 extract('month', Studytimelogs.study_dt) == startrange.month,
+                 extract('day', Studytimelogs.study_dt) >= startrange.day),
+            and_(extract('year', Studytimelogs.study_dt) == endrange.year,
+                 extract('month', Studytimelogs.study_dt) == endrange.month,
+                 extract('day', Studytimelogs.study_dt) <= endrange.day),
+            Studytimelogs.studytime_min.isnot(None)) \
+            .group_by(Studytimelogs.member_id, Studytimelogs.guild_id) \
+            .order_by(desc(Studytimelogs.studytime_min)).all()
+        sum_studytime = obj[0]
+        if isinstance(sum_studytime, type(None)):
+            sum_studytime = 0
+        return sum_studytime
 
     def aggregate_users_record(self, days, status):
         """
@@ -239,7 +242,7 @@ class Week_Aggregate(commands.Cog):
         today = datetime.today()
         strtoday = datetime.strftime(today, '%Y-%m-%d')
         if status == "week":
-            days = self.arr_weekdays(today)
+            days, desc_lastweek = self.getlastweek_days()
             user_records = self.aggregate_users_record(days, status)
             result = self.compose_users_weekrecord(
                 strtoday, days, user_records)

@@ -1,4 +1,3 @@
-import re
 from datetime import datetime, timedelta, date
 
 from discord.ext import commands
@@ -40,24 +39,6 @@ class Week_Aggregate(commands.Cog):
     def serialize_log(self, *args, end="\n"):
         context = "".join(map(str, args)) + end
         return context
-
-    def construct_user_weekrecord(self,
-                                  user_name,
-                                  studyWeekday,
-                                  sum_study_time):
-        userWeekResult = self.serialize_log("Name：", user_name)
-        # ex) 配列内の[04-20]月-日の文字列を[20]0埋めしない日に変換
-        studyDay = []
-        for item in studyWeekday:
-            item_mod = re.sub(r'(^[0-9]{2})-0?([1-9]?[0-9]$)', r'\2', item)
-            studyDay.append(item_mod)
-        # ex) [04-20]
-        userWeekResult += self.serialize_log("　勉強した日付：",
-                                             str(studyDay))
-        userWeekResult += self.serialize_log(
-            "　合計勉強時間：",
-            str(self.minutes2time(sum_study_time)))
-        return userWeekResult
 
     def subquery(self, session, tm, ts, startrange_dt, endrange_dt,
                  str_wodfilter) -> object:
@@ -129,12 +110,7 @@ class Week_Aggregate(commands.Cog):
             desc(F.sum(tm.studytime_min))
         ).all()
         return members_weekresult
-
-#    def (self,):
-#        # 勉強した曜日を取得
-#        # 欲しいオブジェクト情報{ユーザーID:[月,火,水,木,金,土,日]}
-#        # 別の関数(aggregate_user_record)で取得した勉強時間結果と結合する
-#
+#       欲しいオブジェクト情報{ユーザーID,ユーザName,勉強時間,月,火,水,木,金,土,日}
 
     def compose_users_weekrecord(self, strtoday, days, users_log,
                                  desc_lastweek) -> str:
@@ -155,6 +131,17 @@ class Week_Aggregate(commands.Cog):
             week_result[-1] += separate + user_log
         week_result[-1] += code_block  # end code_block
         return week_result
+
+    def construct_user_weekrecord(self, week_results) -> list:
+        users_record = []
+        for result in week_results:
+            studydow = []
+            users_record = self.serialize_log("Name：", result[1])
+            studydow.extend(result[3:])
+            users_record += self.serialize_log("　勉強した曜日：",
+                                               ",".join(map(str, studydow)))
+            users_record += self.serialize_log("　合計勉強時間：", str(result[2]))
+        return users_record
 
 #    # ======================================================
 #    # Month
@@ -236,8 +223,7 @@ class Week_Aggregate(commands.Cog):
 #        month_result[-1] += code_block  # end code_block
 #        return month_result
 #
-    # ======================================================
-
+#    # ======================================================
     def create_result(self, status):
         today = datetime.today()
         strtoday = datetime.strftime(today, '%Y-%m-%d')
@@ -254,8 +240,8 @@ class Week_Aggregate(commands.Cog):
 #                strtoday, days, user_records)
         return result
 
-    @commands.command()
-    @commands.has_permissions(administrator=True)
+    @ commands.command()
+    @ commands.has_permissions(administrator=True)
     async def admin_Week_Result(self, ctx):
         message = ctx.message
         print(f"Used Command :{ctx.invoked_with} (User){message.author.name}")

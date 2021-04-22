@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, date
+from typing import Union
 
 from discord.ext import commands
 from sqlalchemy import func as F, extract, and_, desc, case
@@ -17,13 +18,13 @@ class Week_Aggregate(commands.Cog):
         self.channel_id = 673006702924136448  # times_supleiades
         self.MAX_SEND_MESSAGE_LENGTH = 2000
 
-    def minutes2time(self, m):
+    def minutes2time(self, m) -> str:
         hour = m // 60
         minute = m % 60
         result_study_time = f"{str(hour)}時間{str(minute)}分"
         return result_study_time
 
-    def getlastweek_days(self):
+    def getlastweek_days(self) -> Union[list, str]:
         weeknumber = [0, 1, 2, 3, 4, 5, 6]
         lastweek_days = []
         for i in weeknumber:
@@ -36,7 +37,7 @@ class Week_Aggregate(commands.Cog):
         desc_lastweek = f"{startrange_strdt}〜{endrange_strdt}"
         return lastweek_days, desc_lastweek
 
-    def serialize_log(self, *args, end="\n"):
+    def serialize_log(self, *args, end="\n") -> str:
         context = "".join(map(str, args)) + end
         return context
 
@@ -112,8 +113,8 @@ class Week_Aggregate(commands.Cog):
         return members_weekresult
 #       欲しいオブジェクト情報{ユーザーID,ユーザName,勉強時間,月,火,水,木,金,土,日}
 
-    def compose_users_weekrecord(self, strtoday, days, users_log,
-                                 desc_lastweek) -> str:
+    def compose_users_weekrecord(self, strtoday, days, user_records,
+                                 desc_lastweek) -> list:
         code_block = "```"
         separate = "====================\n"
 #        start_message = self.serialize_log("@everyone ")
@@ -122,6 +123,7 @@ class Week_Aggregate(commands.Cog):
         start_message += self.serialize_log("今日の日付：", strtoday)
         start_message += self.serialize_log("先週の日付：",
                                             desc_lastweek)
+        users_log = self.usersrecord_listtostr(user_records)
         week_result = [start_message]
         for user_log in users_log:
             msglen = len(week_result[-1] + (separate + user_log))
@@ -132,15 +134,18 @@ class Week_Aggregate(commands.Cog):
         week_result[-1] += code_block  # end code_block
         return week_result
 
-    def construct_user_weekrecord(self, week_results) -> list:
+    def usersrecord_listtostr(self, week_results) -> list:
         users_record = []
         for result in week_results:
+            user_record = []
             studydow = []
-            users_record = self.serialize_log("Name：", result[1])
+            user_record = self.serialize_log("Name：", result[1])
             studydow.extend(result[3:])
-            users_record += self.serialize_log("　勉強した曜日：",
-                                               ",".join(map(str, studydow)))
-            users_record += self.serialize_log("　合計勉強時間：", str(result[2]))
+            user_record += self.serialize_log("　勉強した曜日：",
+                                              ",".join(map(str, studydow)))
+            user_record += self.serialize_log("　合計勉強時間：",
+                                              self.minutes2time(result[2]))
+            users_record.append(user_record)
         return users_record
 
 #    # ======================================================
@@ -224,7 +229,7 @@ class Week_Aggregate(commands.Cog):
 #        return month_result
 #
 #    # ======================================================
-    def create_result(self, status):
+    def create_result(self, status) -> list:
         today = datetime.today()
         strtoday = datetime.strftime(today, '%Y-%m-%d')
         if status == "week":

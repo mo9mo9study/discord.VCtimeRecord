@@ -1,6 +1,5 @@
 import os
 from datetime import datetime, timedelta
-import asyncio
 
 from discord.ext import commands
 import discord
@@ -162,6 +161,8 @@ class Personal_DayRecord(commands.Cog):
                 await msg.delete(delay=3)
             await select_msg.remove_reaction(payload.emoji, payload.member)
             if embed:
+                msg = await self.channel.send("DMを送信しました")
+                await msg.delete(delay=3)
                 await dm.send(embed=embed)
 
     # このコマンドが使えなくなったことを知らせるメッセージを返す
@@ -179,11 +180,7 @@ class Personal_DayRecord(commands.Cog):
             msg = await command_channel.send(
                 f"{member.mention} テキストチャンネル[ #個人勉強集計 ]はここだよーーー！"
             )
-            await self.time_sleep(msg)
-
-    async def time_sleep(self, msg):
-        await asyncio.sleep(5)
-        await msg.delete()
+            await msg.delete(delay=5)
 
 
 def setup(bot):

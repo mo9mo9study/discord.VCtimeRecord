@@ -1,6 +1,5 @@
 from datetime import date, datetime, timedelta
 import re
-import asyncio
 from typing import Union
 
 import discord
@@ -177,6 +176,8 @@ class Personal_WeekRecord(commands.Cog):
                     await self.sendstrfembed("ERROR",
                                              "勉強記録がありません")
                 else:
+                    msg = await self.channel.send("DMを送信しました")
+                    await msg.delete(delay=3)
                     await self.dm.send(embed=embed)
             # --------------DBerror処理--------------
             # else:
@@ -198,11 +199,7 @@ class Personal_WeekRecord(commands.Cog):
             msg = await command_channel.send(
                 f"{member.mention} テキストチャンネル[ #個人勉強集計 ]はここだよーーー！"
             )
-            await self.time_sleep(msg)
-
-    async def time_sleep(self, msg):
-        await asyncio.sleep(5)
-        await msg.delete()
+            await msg.delete(delay=5)
 
 
 def setup(bot):

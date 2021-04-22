@@ -84,7 +84,7 @@ class Personal_DayRecord(commands.Cog):
             Studytimelogs.studytime_min.isnot(None)).first()
         return int(obj[0])
 
-    def compose_user_record(self, name, day, studytime):
+    def compose_user_record(self, day, studytime):
         day_result = '''
 #今日の積み上げ
 -
@@ -93,9 +93,7 @@ class Personal_DayRecord(commands.Cog):
 #もくもくオンライン勉強会
 [ {day}の勉強時間 ]
 ---> {totalStudyTime}
-#mo9mo9_{name}
-        '''.format(name=name,
-                   day=day,
+        '''.format(day=day,
                    totalStudyTime=str(Week_Aggregate(self.bot)
                                       .minutes2time(studytime))).strip()
         return day_result
@@ -147,7 +145,7 @@ class Personal_DayRecord(commands.Cog):
                 sum_studytime = self.aggregate_user_record(
                     member, today, today)
                 sendMessage = self.compose_user_record(
-                    member, strtoday, sum_studytime)
+                    strtoday, sum_studytime)
                 embed = self.create_twitter_embed(sendMessage)
             # --------------昨日の勉強集計---------------------
             elif payload.emoji.name == "2⃣":
@@ -156,7 +154,7 @@ class Personal_DayRecord(commands.Cog):
                 sum_studytime = self.aggregate_user_record(
                     member, yesterday, yesterday)
                 sendMessage = self.compose_user_record(
-                    member, strday, sum_studytime)
+                    strday, sum_studytime)
                 embed = self.create_twitter_embed(sendMessage)
             else:
                 msg = await self.channel.send("1⃣,2⃣のスタンプをクリック下さい")

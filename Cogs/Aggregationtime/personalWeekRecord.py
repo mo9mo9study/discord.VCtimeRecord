@@ -43,7 +43,6 @@ class Personal_WeekRecord(commands.Cog):
 #もくもくオンライン勉強会
 [ {day}の勉強時間 ]
 ---> {totalStudyTime}
-#mo9mo9_{member.id}
         '''
         return week_result
 

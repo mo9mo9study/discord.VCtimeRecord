@@ -1,5 +1,6 @@
 import os
 from datetime import datetime, timedelta
+import asyncio
 
 from discord.ext import commands
 import discord
@@ -162,6 +163,27 @@ class Personal_DayRecord(commands.Cog):
             await select_msg.remove_reaction(payload.emoji, payload.member)
             if embed:
                 await dm.send(embed=embed)
+
+    # このコマンドが使えなくなったことを知らせるメッセージを返す
+    @commands.group(invoke_without_command=True)
+    async def result_d(self, ctx, *args):
+        if ctx.subcommand_passed is None:
+            embed = discord.Embed(title="もうこのコマンドは使えなくなったの。", color=0xff0000)
+            embed.add_field(name="テキストチャンネル[ #個人勉強集計 ]のスタンプを押して集計してみてね",
+                            value="""※ 4/23日から処理のトリガーを切り替えたけど、きっと慣れたら楽になはず！
+                            何か気になることあれば気軽に[ @すー ]まで気軽に連絡してね""",
+                            )
+            command_channel = self.bot.get_channel(829515424042450984)
+            member = ctx.guild.get_member(ctx.author.id)
+            await ctx.channel.send(embed=embed)
+            msg = await command_channel.send(
+                f"{member.mention} テキストチャンネル[ #個人勉強集計 ]はここだよーーー！"
+            )
+            await self.time_sleep(msg)
+
+    async def time_sleep(self, msg):
+        await asyncio.sleep(5)
+        await msg.delete()
 
 
 def setup(bot):

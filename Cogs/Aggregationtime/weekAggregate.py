@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, date
+from dateutil.relativedelta import relativedelta
 from typing import Union
 
 from discord.ext import commands
@@ -117,7 +118,7 @@ class Week_Aggregate(commands.Cog):
         start_message += self.serialize_log("今日の日付：", strtoday)
         start_message += self.serialize_log("先週の日付：",
                                             desc_lastweek)
-        users_log = self.usersrecord_listtostr(user_records)
+        users_log = self.week_usersrecord_listtostr(user_records)
         week_result = [start_message]
         for user_log in users_log:
             msglen = len(week_result[-1] + (separate + user_log))
@@ -128,7 +129,7 @@ class Week_Aggregate(commands.Cog):
         week_result[-1] += code_block  # end code_block
         return week_result
 
-    def usersrecord_listtostr(self, week_results) -> list:
+    def week_usersrecord_listtostr(self, week_results) -> list:
         users_record = []
         for result in week_results:
             user_record = []
@@ -142,143 +143,124 @@ class Week_Aggregate(commands.Cog):
             users_record.append(user_record)
         return users_record
 
-#    # ======================================================
-#    # Month
-#    # ======================================================
-#
-#    def getMonth(self, y, m) -> int:
-#        if m in {1, 3, 5, 7, 8, 10, 12}:
-#            return 31
-#        elif m in {4, 6, 9, 11}:
-#            return 30
-#        elif m in {2}:
-#            if y % 4 == 0 and (y % 100 != 0 or y % 400 == 0):
-#                return 29
-#            else:
-#                return 28
-#        else:
-#            return 0
-#
-#    def getLastMonthValiable(self, request) -> str:
-#        thisMonth_YMFirstday = datetime(int(datetime.strftime( \
-#                                           datetime.today(), '%Y')),
-#                                        int(datetime.strftime(
-#                                            datetime.today(), '%m')), 1)
-#        lastMonth_Y = int(datetime.strftime(
-#            datetime.today() - relativedelta(months=1), '%Y'))  # ex)2020
-#        lastMonth_M = int(datetime.strftime(
-#            datetime.today() - relativedelta(months=1), '%m'))  # ex)3
-#        lastMonth_YMFirstday = date(
-#            lastMonth_Y, lastMonth_M, 1)  # ex)2020-03-01
-#        lastMonth_Days = self.getMonth(lastMonth_Y, lastMonth_M)
-#        if request == 'thisMonth_YMFirstday':
-#            return thisMonth_YMFirstday
-#        if request == 'lastMonth_YMFirstday':
-#            return lastMonth_YMFirstday
-#        if request == 'D':
-#            return lastMonth_Days
-#
-#    def month_aggregate_users_record(self, startrange_dt,
-#                               endrange_dt) -> list:
-#        session = Studytimelogs.session()
-#        startdt_str = startrange_dt.strftime('%Y-%m-%d')
-#        enddt_str = endrange_dt.strftime('%Y-%m-%d')
-#        # メインとサブで使用するテーブルの別名
-#        tm, ts = aliased(Studytimelogs), aliased(Studytimelogs)
-#        # 1〜6,0（月〜日）の情報を取得するための動的なフィルター作成
-#        sub_q1 = self.subquery(session, tm, ts, startrange_dt, endrange_dt,
-#                               "F.date_format(ts.study_dt, '%w') == 1")
-#        sub_q2 = self.subquery(session, tm, ts, startrange_dt, endrange_dt,
-#                               "F.date_format(ts.study_dt, '%w') == 2")
-#        sub_q3 = self.subquery(session, tm, ts, startrange_dt, endrange_dt,
-#                               "F.date_format(ts.study_dt, '%w') == 3")
-#        sub_q4 = self.subquery(session, tm, ts, startrange_dt, endrange_dt,
-#                               "F.date_format(ts.study_dt, '%w') == 4")
-#        sub_q5 = self.subquery(session, tm, ts, startrange_dt, endrange_dt,
-#                               "F.date_format(ts.study_dt, '%w') == 5")
-#        sub_q6 = self.subquery(session, tm, ts, startrange_dt, endrange_dt,
-#                               "F.date_format(ts.study_dt, '%w') == 6")
-#        sub_q0 = self.subquery(session, tm, ts, startrange_dt, endrange_dt,
-#                               "F.date_format(ts.study_dt, '%w') == 0")
-#        members_weekresult = session.query(
-#            tm.member_id,
-#            Studymembers.member_name,
-#            F.sum(tm.studytime_min),
-#            case([(sub_q1.exists(), "月")], else_="x"),
-#            case([(sub_q2.exists(), "火")], else_="x"),
-#            case([(sub_q3.exists(), "水")], else_="x"),
-#            case([(sub_q4.exists(), "木")], else_="x"),
-#            case([(sub_q5.exists(), "金")], else_="x"),
-#            case([(sub_q6.exists(), "土")], else_="x"),
-#            case([(sub_q0.exists(), "日")], else_="x"),
-#        ).join(
-#            Studymembers,
-#            tm.member_id == Studymembers.member_id
-#        ).filter(
-#            tm.access == "out",
-#            tm.excluded_record.isnot(True),
-#            F.date_format(tm.study_dt, '%Y-%m-%d') == ''
-#            and_(extract('year', tm.study_dt) == startrange_dt.year,
-#                 extract('month', tm.study_dt) == startrange_dt.month,
-#                 extract('day', tm.study_dt) >= startrange_dt.day),
-#            and_(extract('year', tm.study_dt) == endrange_dt.year,
-#                 extract('month', tm.study_dt) == endrange_dt.month,
-#                 extract('day', tm.study_dt) <= endrange_dt.day),
-#            tm.studytime_min.isnot(None)
-#        ).group_by(
-#            tm.member_id,
-#            tm.guild_id,
-#        ).order_by(
-#            desc(F.sum(tm.studytime_min))
-#        ).all()
-#        return members_weekresult
-# 欲しいオブジェクト情報{ユーザーID,ユーザName,勉強時間,月,火,水,木,金,土,日}
-#
-#    def construct_user_monthrecord(self,
-#                                   user_name,
-#                                   studyMonth_day,
-#                                   sum_study_time):
-#        userMonthResult = self.serialize_log("Name：", user_name)
-#        print("(", user_name, ")", "　勉強した日付：", str(studyMonth_day))
+    # ======================================================
+    # Month
+    # ======================================================
+
+    def getMonth(self, y, m) -> int:
+        if m in {1, 3, 5, 7, 8, 10, 12}:
+            return 31
+        elif m in {4, 6, 9, 11}:
+            return 30
+        elif m in {2}:
+            if y % 4 == 0 and (y % 100 != 0 or y % 400 == 0):
+                return 29
+            else:
+                return 28
+        else:
+            return 0
+
+    def getLastMonthValiable(self, request) -> datetime:
+        thisMonth_YMFirstday = datetime(int(datetime.strftime(
+            datetime.today(), '%Y')),
+            int(datetime.strftime(
+                datetime.today(), '%m')), 1)
+        lastMonth_Y = int(datetime.strftime(
+            datetime.today() - relativedelta(months=1), '%Y'))  # ex)2020
+        lastMonth_M = int(datetime.strftime(
+            datetime.today() - relativedelta(months=1), '%m'))  # ex)3
+        lastMonth_YMFirstday = date(
+            lastMonth_Y, lastMonth_M, 1)  # ex)2020-03-01
+        month_endday = self.getMonth(lastMonth_Y, lastMonth_M)
+        lastMonth_YMEndday = date(
+            lastMonth_Y, lastMonth_M, month_endday)
+        if request == 'thisMonth_YMFirstday':
+            return thisMonth_YMFirstday
+        if request == 'lastMonth_YMFirstday':
+            return lastMonth_YMFirstday
+        if request == 'lastMonth_YMEndday':
+            return lastMonth_YMEndday
+
+    def month_aggregate_users_record(self, startrange_dt) -> list:
+        session = Studytimelogs.session()
+        monthdt_str = startrange_dt.strftime('%Y-%m')
+        # メインとサブで使用するテーブルの別名
+        tm = aliased(Studytimelogs)
+        members_monthresult = session.query(
+            tm.member_id,
+            Studymembers.member_name,
+            F.sum(tm.studytime_min),
+        ).join(
+            Studymembers,
+            tm.member_id == Studymembers.member_id
+        ).filter(
+            tm.access == "out",
+            tm.excluded_record.isnot(True),
+            F.date_format(tm.study_dt, '%Y-%m') == monthdt_str,
+            tm.studytime_min.isnot(None)
+        ).group_by(
+            tm.member_id,
+            tm.guild_id,
+        ).order_by(
+            desc(F.sum(tm.studytime_min))
+        ).all()
+        return members_monthresult
+        # 欲しいオブジェクト情報{ユーザーID,ユーザName,勉強時間}
+
+    def arr_monthdays(self, today):
+        lastmonth_days = []
+        lastmonth_days.append(
+            self.getLastMonthValiable('lastMonth_YMFirstday')
+        )
+        lastmonth_days.append(
+            self.getLastMonthValiable('lastMonth_YMEndday')
+        )
+        startrange_strdt = lastmonth_days[0]
+        endrange_strdt = lastmonth_days[-1]
+        desc_lastmonth = f"{startrange_strdt}〜{endrange_strdt}"
+        return lastmonth_days, desc_lastmonth
+
+    def compose_users_monthrecord(self, strtoday, days, user_records,
+                                  desc_lastmonth):
+        code_block = "```"
+        separate = "====================\n"
+        # start_message = self.serialize_log("@everyone ")
+        start_message = self.serialize_log("everyone ")
+        start_message += code_block + "\n"
+        start_message += self.serialize_log("今日の日付：", strtoday)
+        start_message += self.serialize_log(
+            "先月の日付：",
+            desc_lastmonth)
+        users_log = self.month_usersrecord_listtostr(user_records)
+        month_result = [start_message]
+        for user_log in users_log:
+            msglen = len(month_result[-1] + (separate + user_log))
+            if msglen >= self.MAX_SEND_MESSAGE_LENGTH - len(code_block):
+                month_result[-1] += code_block  # end code_block
+                month_result.append(code_block)  # start code_block
+            month_result[-1] += separate + user_log
+        month_result[-1] += code_block  # end code_block
+        return month_result
+
+    def month_usersrecord_listtostr(self, month_results) -> list:
+        users_record = []
+        for result in month_results:
+            # result: [member_id, member_name, studytime_min]
+            user_record = []
+            user_record = self.serialize_log("Name：", result[1])
+            user_record += self.serialize_log("　合計勉強時間：",
+                                              self.minutes2time(result[2]))
+            users_record.append(user_record)
+#       勉強日数計算の処理が完成してないためコメント
 #        userMonthResult += self.serialize_log(
 #            "　合計勉強時間：",
 #            str(self.minutes2time(sum_study_time)),
 #            "(勉強日数：",
 #            len(studyMonth_day),
 #            ")")
-#        return userMonthResult
-#
-#    def arr_monthdays(self, today):
-#        days = []
-#        for i in reversed(range(1, self.getLastMonthValiable('D')+1)):
-#            day = self.getLastMonthValiable(
-#                'thisMonth_YMFirstday') - relativedelta(days=i)
-#            print(day)
-#            days.append(datetime.strftime(day, '%Y-%m-%d'))
-#        return days
-#
-#    def compose_users_monthrecord(self, strtoday, days, users_log):
-#        code_block = "```"
-#        separate = "====================\n"
-#        #start_message = self.serialize_log("@everyone ")
-#        start_message = self.serialize_log("everyone ")
-#        start_message += code_block + "\n"
-#        start_message += self.serialize_log("取得日：", strtoday)
-#        start_message += self.serialize_log(
-#            "先月の日付：",
-#            self.getLastMonthValiable('lastMonth_YMFirstday'),
-#            "~", days[-1])
-#        month_result = [start_message]
-#        for user_log in users_log:
-#            msglen = len(month_result[-1] + (separate + user_log))
-#            if msglen >= self.MAX_SEND_MESSAGE_LENGTH - len(code_block):
-#                month_result[-1] += code_block  # end code_block
-#                month_result.append(code_block)  # start code_block
-#            month_result[-1] += separate + user_log
-#        month_result[-1] += code_block  # end code_block
-#        return month_result
-#
-#    # ======================================================
+        return users_record
+
+    # ======================================================
     def create_result(self, status) -> list:
         today = datetime.today()
         strtoday = datetime.strftime(today, '%Y-%m-%d')
@@ -289,15 +271,16 @@ class Week_Aggregate(commands.Cog):
             result = self.compose_users_weekrecord(
                 strtoday, days, user_records, desc_lastweek)
         if status == "month":
-            days = self.arr_monthdays(today)
-            user_records = self.month_aggregate_users_record(days, status)
+            days, desc_lastmonth = self.arr_monthdays(today)
+            user_records = self.month_aggregate_users_record(days[0])
+
             result = self.compose_users_monthrecord(
-                strtoday, days, user_records)
+                strtoday, days, user_records, desc_lastmonth)
         return result
 
     @ commands.command()
     @ commands.has_permissions(administrator=True)
-    async def admin_Week_Result(self, ctx):
+    async def admin_weekresult(self, ctx):
         message = ctx.message
         print(f"Used Command :{ctx.invoked_with} (User){message.author.name}")
         print(f"手動週間集計実行日: {datetime.now().strftime('%Y-%m-%d %H:%M')}")

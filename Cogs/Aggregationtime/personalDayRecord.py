@@ -84,7 +84,7 @@ class Personal_DayRecord(commands.Cog):
             Studytimelogs.studytime_min.isnot(None)).first()
         return int(obj[0])
 
-    def compose_user_record(self, name, day, studytime):
+    def compose_user_record(self, day, studytime):
         day_result = '''
 #今日の積み上げ
 -
@@ -93,9 +93,7 @@ class Personal_DayRecord(commands.Cog):
 #もくもくオンライン勉強会
 [ {day}の勉強時間 ]
 ---> {totalStudyTime}
-#mo9mo9_{name}
-        '''.format(name=name,
-                   day=day,
+        '''.format(day=day,
                    totalStudyTime=str(Week_Aggregate(self.bot)
                                       .minutes2time(studytime))).strip()
         return day_result
@@ -147,7 +145,7 @@ class Personal_DayRecord(commands.Cog):
                 sum_studytime = self.aggregate_user_record(
                     member, today, today)
                 sendMessage = self.compose_user_record(
-                    member, strtoday, sum_studytime)
+                    strtoday, sum_studytime)
                 embed = self.create_twitter_embed(sendMessage)
             # --------------昨日の勉強集計---------------------
             elif payload.emoji.name == "2⃣":
@@ -156,14 +154,33 @@ class Personal_DayRecord(commands.Cog):
                 sum_studytime = self.aggregate_user_record(
                     member, yesterday, yesterday)
                 sendMessage = self.compose_user_record(
-                    member, strday, sum_studytime)
+                    strday, sum_studytime)
                 embed = self.create_twitter_embed(sendMessage)
             else:
                 msg = await self.channel.send("1⃣,2⃣のスタンプをクリック下さい")
                 await msg.delete(delay=3)
             await select_msg.remove_reaction(payload.emoji, payload.member)
             if embed:
+                msg = await self.channel.send("DMを送信しました")
+                await msg.delete(delay=3)
                 await dm.send(embed=embed)
+
+    # このコマンドが使えなくなったことを知らせるメッセージを返す
+    @commands.group(invoke_without_command=True)
+    async def result_d(self, ctx, *args):
+        if ctx.subcommand_passed is None:
+            embed = discord.Embed(title="もうこのコマンドは使えなくなったの。", color=0xff0000)
+            embed.add_field(name="テキストチャンネル[ #個人勉強集計 ]のスタンプを押して集計してみてね",
+                            value="""※ 4/23日から処理のトリガーを切り替えたけど、きっと慣れたら楽になはず！
+                            何か気になることあれば気軽に[ @すー ]まで気軽に連絡してね""",
+                            )
+            command_channel = self.bot.get_channel(829515424042450984)
+            member = ctx.guild.get_member(ctx.author.id)
+            await ctx.channel.send(embed=embed)
+            msg = await command_channel.send(
+                f"{member.mention} テキストチャンネル[ #個人勉強集計 ]はここだよーーー！"
+            )
+            await msg.delete(delay=5)
 
 
 def setup(bot):

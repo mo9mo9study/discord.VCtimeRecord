@@ -43,7 +43,6 @@ class Personal_WeekRecord(commands.Cog):
 #もくもくオンライン勉強会
 [ {day}の勉強時間 ]
 ---> {totalStudyTime}
-#mo9mo9_{member.id}
         '''
         return week_result
 
@@ -97,7 +96,7 @@ class Personal_WeekRecord(commands.Cog):
 
     def embedlastweekresult(self, member) -> Union[discord.embeds.Embed, int]:
         lastweek_days, desc_lastweek = Week_Aggregate(
-            self.bot).self.getlastweek_days()
+            self.bot).getlastweek_days()
         sum_studytime = Personal_DayRecord(self.bot) \
             .aggregate_user_record(member,
                                    lastweek_days[0],
@@ -177,11 +176,30 @@ class Personal_WeekRecord(commands.Cog):
                     await self.sendstrfembed("ERROR",
                                              "勉強記録がありません")
                 else:
+                    msg = await self.channel.send("DMを送信しました")
+                    await msg.delete(delay=3)
                     await self.dm.send(embed=embed)
             # --------------DBerror処理--------------
             # else:
             #    msg = await self.channel.send("今週の勉強記録が見つかりませんでした")
             #    await self.time_sleep(msg)
+
+    # このコマンドが使えなくなったことを知らせるメッセージを返す
+    @commands.group(invoke_without_command=True)
+    async def result_w(self, ctx, *args):
+        if ctx.subcommand_passed is None:
+            embed = discord.Embed(title="もうこのコマンドは使えなくなったの。", color=0xff0000)
+            embed.add_field(name="テキストチャンネル[ #個人勉強集計 ]のスタンプを押して集計してみてね",
+                            value="""※ 4/23日から処理のトリガーを切り替えたけど、きっと慣れたら楽になはず！
+                            何か気になることあれば気軽に[ @すー ]まで気軽に連絡してね""",
+                            )
+            command_channel = self.bot.get_channel(829515424042450984)
+            member = ctx.guild.get_member(ctx.author.id)
+            await ctx.channel.send(embed=embed)
+            msg = await command_channel.send(
+                f"{member.mention} テキストチャンネル[ #個人勉強集計 ]はここだよーーー！"
+            )
+            await msg.delete(delay=5)
 
 
 def setup(bot):

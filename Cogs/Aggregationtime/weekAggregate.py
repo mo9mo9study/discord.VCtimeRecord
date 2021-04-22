@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, date
 from typing import Union
 
 from discord.ext import commands
-from sqlalchemy import func as F, extract, and_, desc, case
+from sqlalchemy import func as F, desc, case
 from sqlalchemy.orm import aliased
 
 from mo9mo9db.dbtables import Studytimelogs
@@ -41,7 +41,7 @@ class Week_Aggregate(commands.Cog):
         context = "".join(map(str, args)) + end
         return context
 
-    def subquery(self, session, tm, ts, startrange_dt, endrange_dt,
+    def subquery(self, session, tm, ts, startdt_str, enddt_str,
                  str_wodfilter) -> object:
         obj = session.query(
             ts.study_dt
@@ -49,36 +49,34 @@ class Week_Aggregate(commands.Cog):
             ts.member_id == tm.member_id,
             ts.access == "out",
             ts.excluded_record.isnot(True),
-            and_(extract('year', ts.study_dt) == startrange_dt.year,
-                 extract('month', ts.study_dt) == startrange_dt.month,
-                 extract('day', ts.study_dt) >= startrange_dt.day),
-            and_(extract('year', ts.study_dt) == endrange_dt.year,
-                 extract('month', ts.study_dt) == endrange_dt.month,
-                 extract('day', ts.study_dt) <= endrange_dt.day),
+            F.date_format(ts.study_dt, '%Y-%m-%d') >= startdt_str,
+            F.date_format(ts.study_dt, '%Y-%m-%d') <= enddt_str,
             ts.studytime_min.isnot(None),
             eval(str_wodfilter)
         )
         return obj
 
-    def aggregate_users_record(self, startrange_dt,
-                               endrange_dt) -> list:
+    def week_aggregate_users_record(self, startrange_dt,
+                                    endrange_dt) -> list:
         session = Studytimelogs.session()
+        startdt_str = startrange_dt.strftime('%Y-%m-%d')
+        enddt_str = endrange_dt.strftime('%Y-%m-%d')
         # メインとサブで使用するテーブルの別名
         tm, ts = aliased(Studytimelogs), aliased(Studytimelogs)
         # 1〜6,0（月〜日）の情報を取得するための動的なフィルター作成
-        sub_q1 = self.subquery(session, tm, ts, startrange_dt, endrange_dt,
+        sub_q1 = self.subquery(session, tm, ts, startdt_str, enddt_str,
                                "F.date_format(ts.study_dt, '%w') == 1")
-        sub_q2 = self.subquery(session, tm, ts, startrange_dt, endrange_dt,
+        sub_q2 = self.subquery(session, tm, ts, startdt_str, enddt_str,
                                "F.date_format(ts.study_dt, '%w') == 2")
-        sub_q3 = self.subquery(session, tm, ts, startrange_dt, endrange_dt,
+        sub_q3 = self.subquery(session, tm, ts, startdt_str, enddt_str,
                                "F.date_format(ts.study_dt, '%w') == 3")
-        sub_q4 = self.subquery(session, tm, ts, startrange_dt, endrange_dt,
+        sub_q4 = self.subquery(session, tm, ts, startdt_str, enddt_str,
                                "F.date_format(ts.study_dt, '%w') == 4")
-        sub_q5 = self.subquery(session, tm, ts, startrange_dt, endrange_dt,
+        sub_q5 = self.subquery(session, tm, ts, startdt_str, enddt_str,
                                "F.date_format(ts.study_dt, '%w') == 5")
-        sub_q6 = self.subquery(session, tm, ts, startrange_dt, endrange_dt,
+        sub_q6 = self.subquery(session, tm, ts, startdt_str, enddt_str,
                                "F.date_format(ts.study_dt, '%w') == 6")
-        sub_q0 = self.subquery(session, tm, ts, startrange_dt, endrange_dt,
+        sub_q0 = self.subquery(session, tm, ts, startdt_str, enddt_str,
                                "F.date_format(ts.study_dt, '%w') == 0")
         members_weekresult = session.query(
             tm.member_id,
@@ -97,12 +95,8 @@ class Week_Aggregate(commands.Cog):
         ).filter(
             tm.access == "out",
             tm.excluded_record.isnot(True),
-            and_(extract('year', tm.study_dt) == startrange_dt.year,
-                 extract('month', tm.study_dt) == startrange_dt.month,
-                 extract('day', tm.study_dt) >= startrange_dt.day),
-            and_(extract('year', tm.study_dt) == endrange_dt.year,
-                 extract('month', tm.study_dt) == endrange_dt.month,
-                 extract('day', tm.study_dt) <= endrange_dt.day),
+            F.date_format(tm.study_dt, '%Y-%m-%d') >= startdt_str,
+            F.date_format(tm.study_dt, '%Y-%m-%d') <= enddt_str,
             tm.studytime_min.isnot(None)
         ).group_by(
             tm.member_id,
@@ -152,7 +146,7 @@ class Week_Aggregate(commands.Cog):
 #    # Month
 #    # ======================================================
 #
-#    def getMonth(self, y, m):
+#    def getMonth(self, y, m) -> int:
 #        if m in {1, 3, 5, 7, 8, 10, 12}:
 #            return 31
 #        elif m in {4, 6, 9, 11}:
@@ -165,7 +159,7 @@ class Week_Aggregate(commands.Cog):
 #        else:
 #            return 0
 #
-#    def getLastMonthValiable(self, request):
+#    def getLastMonthValiable(self, request) -> str:
 #        thisMonth_YMFirstday = datetime(int(datetime.strftime( \
 #                                           datetime.today(), '%Y')),
 #                                        int(datetime.strftime(
@@ -183,6 +177,62 @@ class Week_Aggregate(commands.Cog):
 #            return lastMonth_YMFirstday
 #        if request == 'D':
 #            return lastMonth_Days
+#
+#    def month_aggregate_users_record(self, startrange_dt,
+#                               endrange_dt) -> list:
+#        session = Studytimelogs.session()
+#        startdt_str = startrange_dt.strftime('%Y-%m-%d')
+#        enddt_str = endrange_dt.strftime('%Y-%m-%d')
+#        # メインとサブで使用するテーブルの別名
+#        tm, ts = aliased(Studytimelogs), aliased(Studytimelogs)
+#        # 1〜6,0（月〜日）の情報を取得するための動的なフィルター作成
+#        sub_q1 = self.subquery(session, tm, ts, startrange_dt, endrange_dt,
+#                               "F.date_format(ts.study_dt, '%w') == 1")
+#        sub_q2 = self.subquery(session, tm, ts, startrange_dt, endrange_dt,
+#                               "F.date_format(ts.study_dt, '%w') == 2")
+#        sub_q3 = self.subquery(session, tm, ts, startrange_dt, endrange_dt,
+#                               "F.date_format(ts.study_dt, '%w') == 3")
+#        sub_q4 = self.subquery(session, tm, ts, startrange_dt, endrange_dt,
+#                               "F.date_format(ts.study_dt, '%w') == 4")
+#        sub_q5 = self.subquery(session, tm, ts, startrange_dt, endrange_dt,
+#                               "F.date_format(ts.study_dt, '%w') == 5")
+#        sub_q6 = self.subquery(session, tm, ts, startrange_dt, endrange_dt,
+#                               "F.date_format(ts.study_dt, '%w') == 6")
+#        sub_q0 = self.subquery(session, tm, ts, startrange_dt, endrange_dt,
+#                               "F.date_format(ts.study_dt, '%w') == 0")
+#        members_weekresult = session.query(
+#            tm.member_id,
+#            Studymembers.member_name,
+#            F.sum(tm.studytime_min),
+#            case([(sub_q1.exists(), "月")], else_="x"),
+#            case([(sub_q2.exists(), "火")], else_="x"),
+#            case([(sub_q3.exists(), "水")], else_="x"),
+#            case([(sub_q4.exists(), "木")], else_="x"),
+#            case([(sub_q5.exists(), "金")], else_="x"),
+#            case([(sub_q6.exists(), "土")], else_="x"),
+#            case([(sub_q0.exists(), "日")], else_="x"),
+#        ).join(
+#            Studymembers,
+#            tm.member_id == Studymembers.member_id
+#        ).filter(
+#            tm.access == "out",
+#            tm.excluded_record.isnot(True),
+#            F.date_format(tm.study_dt, '%Y-%m-%d') == ''
+#            and_(extract('year', tm.study_dt) == startrange_dt.year,
+#                 extract('month', tm.study_dt) == startrange_dt.month,
+#                 extract('day', tm.study_dt) >= startrange_dt.day),
+#            and_(extract('year', tm.study_dt) == endrange_dt.year,
+#                 extract('month', tm.study_dt) == endrange_dt.month,
+#                 extract('day', tm.study_dt) <= endrange_dt.day),
+#            tm.studytime_min.isnot(None)
+#        ).group_by(
+#            tm.member_id,
+#            tm.guild_id,
+#        ).order_by(
+#            desc(F.sum(tm.studytime_min))
+#        ).all()
+#        return members_weekresult
+# 欲しいオブジェクト情報{ユーザーID,ユーザName,勉強時間,月,火,水,木,金,土,日}
 #
 #    def construct_user_monthrecord(self,
 #                                   user_name,
@@ -234,15 +284,15 @@ class Week_Aggregate(commands.Cog):
         strtoday = datetime.strftime(today, '%Y-%m-%d')
         if status == "week":
             days, desc_lastweek = self.getlastweek_days()
-            user_records = self.aggregate_users_record(days[0],
-                                                       days[-1])
+            user_records = self.week_aggregate_users_record(days[0],
+                                                            days[-1])
             result = self.compose_users_weekrecord(
                 strtoday, days, user_records, desc_lastweek)
-#        if status == "month":
-#            days = self.arr_monthdays(today)
-#            user_records = self.aggregate_users_record(days, status)
-#            result = self.compose_users_monthrecord(
-#                strtoday, days, user_records)
+        if status == "month":
+            days = self.arr_monthdays(today)
+            user_records = self.month_aggregate_users_record(days, status)
+            result = self.compose_users_monthrecord(
+                strtoday, days, user_records)
         return result
 
     @ commands.command()

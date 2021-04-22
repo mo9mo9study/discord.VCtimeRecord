@@ -1,5 +1,5 @@
 # About discord.study
-[![GitHub forks](https://img.shields.io/github/forks/mo9mo9study/discord.study.svg)](https://github.com/mo9mo9study/discord.study/network)
+[![GitHub forks](https://img.shields.io/github/forks/mo9mo9study/discord.VCtimeRecord.svg)](https://github.com/mo9mo9study/discord.VCtimeRecord/network)
 ![Discord](https://discordapp.com/api/guilds/603582455756095488/widget.png?style=shield)
 Discord サーバー「もくもくOnline勉強会」のBotです。
 

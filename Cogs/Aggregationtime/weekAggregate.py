@@ -15,8 +15,7 @@ class Week_Aggregate(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.guild_id = 603582455756095488  # もくもくOnline勉強会
-        # self.channel_id = 683936366756888616  # 週間勉強集計
-        self.channel_id = 673006702924136448  # times_supleiades
+        self.channel_id = 683936366756888616  # 週間勉強集計
         self.MAX_SEND_MESSAGE_LENGTH = 2000
 
     def minutes2time(self, m) -> str:

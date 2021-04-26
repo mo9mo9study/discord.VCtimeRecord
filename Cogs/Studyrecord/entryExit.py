@@ -52,9 +52,9 @@ class ENTRY_EXIT(commands.Cog):
         print(f"[{now}] {member.name} {access}ログをDiscordに出力")
         send_channel = self.bot.get_channel(self.channel_id)
         if access == "in":
-            msg = f"[{now}]  {member.name}  joined the  {channel.name}."
+            msg = f"**[{now}]  {member.name}  joined the  {channel.name}.**"
         elif access == "out":
-            msg = f"[{now}]  {member.name}  Study time  {studytime} /分"
+            msg = f"**[{now}]  {member.name}  Study time  {studytime} /分**"
         await send_channel.send(msg)
 
     @commands.Cog.listener()

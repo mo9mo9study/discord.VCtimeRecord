@@ -112,8 +112,8 @@ class Week_Aggregate(commands.Cog):
                                  desc_lastweek) -> list:
         code_block = "```"
         separate = "====================\n"
-#        start_message = self.serialize_log("@everyone ")
-        start_message = self.serialize_log("everyone ")
+        start_message = self.serialize_log("@everyone ")
+        # start_message = self.serialize_log("everyone ")
         start_message += code_block + "\n"
         start_message += self.serialize_log("今日の日付：", strtoday)
         start_message += self.serialize_log("先週の日付：",
@@ -224,8 +224,8 @@ class Week_Aggregate(commands.Cog):
                                   desc_lastmonth):
         code_block = "```"
         separate = "====================\n"
-        # start_message = self.serialize_log("@everyone ")
-        start_message = self.serialize_log("everyone ")
+        start_message = self.serialize_log("@everyone ")
+        # start_message = self.serialize_log("everyone ")
         start_message += code_block + "\n"
         start_message += self.serialize_log("今日の日付：", strtoday)
         start_message += self.serialize_log(
@@ -238,8 +238,6 @@ class Week_Aggregate(commands.Cog):
             if msglen >= self.MAX_SEND_MESSAGE_LENGTH - len(code_block):
                 month_result[-1] += code_block  # end code_block
                 month_result.append(code_block)  # start code_block
-            month_result[-1] += separate + user_log
-        month_result[-1] += code_block  # end code_block
         return month_result
 
     def month_usersrecord_listtostr(self, month_results) -> list:
@@ -273,7 +271,6 @@ class Week_Aggregate(commands.Cog):
         if status == "month":
             days, desc_lastmonth = self.arr_monthdays(today)
             user_records = self.month_aggregate_users_record(days[0])
-
             result = self.compose_users_monthrecord(
                 strtoday, days, user_records, desc_lastmonth)
         return result

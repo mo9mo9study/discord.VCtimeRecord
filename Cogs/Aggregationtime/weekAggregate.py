@@ -237,6 +237,8 @@ class Week_Aggregate(commands.Cog):
             if msglen >= self.MAX_SEND_MESSAGE_LENGTH - len(code_block):
                 month_result[-1] += code_block  # end code_block
                 month_result.append(code_block)  # start code_block
+            month_result[-1] += separate + user_log
+        month_result[-1] += code_block  # end code_block
         return month_result
 
     def month_usersrecord_listtostr(self, month_results) -> list:

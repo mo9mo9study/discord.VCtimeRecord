@@ -276,8 +276,8 @@ class Week_Aggregate(commands.Cog):
                 strtoday, days, user_records, desc_lastmonth)
         return result
 
-    @ commands.command()
-    @ commands.has_permissions(administrator=True)
+    @commands.command()
+    @commands.has_permissions(administrator=True)
     async def admin_weekresult(self, ctx):
         message = ctx.message
         print(f"Used Command :{ctx.invoked_with} (User){message.author.name}")

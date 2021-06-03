@@ -14,7 +14,7 @@ class Month_Aggregate(commands.Cog):
         self.MAX_SEND_MESSAGE_LENGTH = 2000
 
     @commands.command()
-    # @commands.has_permissions(administrator=True)
+    @commands.has_permissions(administrator=True)
     async def admin_monthresult(self, ctx):
         message = ctx.message
         print(f"Used Command :{ctx.invoked_with} (User){message.author.name}")

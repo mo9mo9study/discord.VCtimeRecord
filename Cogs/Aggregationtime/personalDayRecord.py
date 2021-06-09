@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 import urllib.parse
 import json
 import requests
-from sqlalchemy import func as F, extract, and_
+from sqlalchemy import func as F
 
 from .weekAggregate import Week_Aggregate
 from mo9mo9db.dbtables import Studytimelogs
@@ -30,17 +30,15 @@ class Personal_DayRecord(commands.Cog):
         # ユーザーの勉強記録を取得
         session = Studytimelogs.session()
         startrange = startrange_dt
-        endrange = endrange_dt
+        days_timedelta = 1
+        endrange_nextday = endrange_dt + timedelta(days=days_timedelta)
+        endrange = endrange_nextday
         obj = session.query(F.sum(Studytimelogs.studytime_min)).filter(
             Studytimelogs.member_id == member.id,
             Studytimelogs.access == "out",
             Studytimelogs.excluded_record.isnot(True),
-            and_(extract('year', Studytimelogs.study_dt) == startrange.year,
-                 extract('month', Studytimelogs.study_dt) == startrange.month,
-                 extract('day', Studytimelogs.study_dt) >= startrange.day),
-            and_(extract('year', Studytimelogs.study_dt) == endrange.year,
-                 extract('month', Studytimelogs.study_dt) == endrange.month,
-                 extract('day', Studytimelogs.study_dt) <= endrange.day),
+            Studytimelogs.study_dt >= startrange,
+            Studytimelogs.study_dt < endrange,
             Studytimelogs.studytime_min.isnot(None)).first()
         sum_studytime = obj[0]
         if isinstance(sum_studytime, type(None)):

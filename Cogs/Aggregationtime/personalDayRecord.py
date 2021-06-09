@@ -29,10 +29,10 @@ class Personal_DayRecord(commands.Cog):
                               endrange_dt) -> int:
         # ユーザーの勉強記録を取得
         session = Studytimelogs.session()
-        startrange = startrange_dt
+        startrange = startrange_dt.date()
         days_timedelta = 1
         endrange_nextday = endrange_dt + timedelta(days=days_timedelta)
-        endrange = endrange_nextday
+        endrange = endrange_nextday.date()
         obj = session.query(F.sum(Studytimelogs.studytime_min)).filter(
             Studytimelogs.member_id == member.id,
             Studytimelogs.access == "out",

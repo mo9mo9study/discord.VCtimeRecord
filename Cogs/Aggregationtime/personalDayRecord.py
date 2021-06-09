@@ -25,14 +25,22 @@ class Personal_DayRecord(commands.Cog):
         dotenv_path = os.path.join(os.getcwd(), '.env')
         load_dotenv(dotenv_path)
 
+    # datetime型をdate型に変換する処理
+    def ifdatetimefdate(self, targetdate):
+        if type(targetdate) == datetime:
+            targetdate = targetdate.date()
+        return targetdate
+
+    # 現状、日次からはdatetime型、週次からはdate型が引数で流れてくる
+    # startrange_dt/endrange_dtは[datetime.datetime] or [datetime.date]
     def aggregate_user_record(self, member, startrange_dt,
                               endrange_dt) -> int:
         # ユーザーの勉強記録を取得
         session = Studytimelogs.session()
-        startrange = startrange_dt.date()
         days_timedelta = 1
         endrange_nextday = endrange_dt + timedelta(days=days_timedelta)
-        endrange = endrange_nextday.date()
+        endrange = self.ifdatetimefdate(endrange_nextday)
+        startrange = self.ifdatetimefdate(startrange_dt)
         obj = session.query(F.sum(Studytimelogs.studytime_min)).filter(
             Studytimelogs.member_id == member.id,
             Studytimelogs.access == "out",

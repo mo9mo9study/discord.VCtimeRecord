@@ -127,10 +127,25 @@ class Personal_DayRecord(commands.Cog):
         embed.add_field(name="2⃣：",
                         value="- 昨日の勉強集計",
                         inline=False)
+        embed.add_field(name="3⃣：",
+                        value="- 今日の勉強集計（times送信）",
+                        inline=False)
+        embed.add_field(name="4⃣：",
+                        value="- 昨日の勉強集計（times送信）",
+                        inline=False)
         self.message = await self.channel.send(embed=embed)
         self.message_id = self.message.id
         await self.message.add_reaction("1⃣")
         await self.message.add_reaction("2⃣")
+        await self.message.add_reaction("3⃣")
+        await self.message.add_reaction("4⃣")
+
+    def searchmytimes(self, payload) -> "discord.channel":
+        for channel in payload.member.guild.text_channels:
+            if str(payload.member.id) == channel.topic:
+                timeschannel = channel
+                break
+        return timeschannel
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
@@ -146,7 +161,8 @@ class Personal_DayRecord(commands.Cog):
         if payload.message_id == self.message_id:
             select_msg = await self.channel.fetch_message(payload.message_id)
             # --------------今日のの勉強集計---------------------
-            if payload.emoji.name == "1⃣":
+            # --------------今日の勉強集計（times）---------------------
+            if payload.emoji.name in ["1⃣", "3⃣"]:
                 strtoday = today.strftime('%Y-%m-%d')
                 sum_studytime = self.aggregate_user_record(
                     member, today, today)
@@ -154,7 +170,8 @@ class Personal_DayRecord(commands.Cog):
                     strtoday, sum_studytime)
                 embed = self.create_twitter_embed(sendMessage)
             # --------------昨日の勉強集計---------------------
-            elif payload.emoji.name == "2⃣":
+            # --------------昨日の勉強集計（times）---------------------
+            elif payload.emoji.name in ["2⃣", "4⃣"]:
                 yesterday = today - timedelta(1)
                 strday = yesterday.strftime('%Y-%m-%d')
                 sum_studytime = self.aggregate_user_record(
@@ -163,13 +180,24 @@ class Personal_DayRecord(commands.Cog):
                     strday, sum_studytime)
                 embed = self.create_twitter_embed(sendMessage)
             else:
-                msg = await self.channel.send("1⃣,2⃣のスタンプをクリック下さい")
+                msg = await self.channel.send("1⃣,2⃣,3⃣,4⃣のスタンプをクリック下さい")
                 await msg.delete(delay=3)
             await select_msg.remove_reaction(payload.emoji, payload.member)
             if embed:
-                msg = await self.channel.send("DMを送信しました")
-                await msg.delete(delay=3)
-                await dm.send(embed=embed)
+                if payload.emoji.name in ["1⃣", "2⃣"]:
+                    msg = await self.channel.send("DMを送信しました")
+                    await msg.delete(delay=3)
+                    await dm.send(embed=embed)
+                elif payload.emoji.name in ["3⃣", "4⃣"]:
+                    for channel in payload.member.guild.text_channels:
+                        if str(payload.member.id) == channel.topic:
+                            timeschannel = channel
+                            break
+                    timeschannel = self.searchmytimes(payload)
+                    msg = await self.channel.send(f"{channel.mention}に送信しました")
+                    await msg.delete(delay=5)
+                    sendmsg = await timeschannel.send(embed=embed)
+                    await sendmsg.add_reaction("<:otsukaresama:757813789952573520>")  # noqa:E501
 
     # このコマンドが使えなくなったことを知らせるメッセージを返す
     @commands.group(invoke_without_command=True)

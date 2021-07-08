@@ -106,7 +106,7 @@ class Personal_DayRecord(commands.Cog):
 
     def create_twitter_embed(self, sendMessage):
         longUrl = self.createTwitterUrlEncode(
-            "https://mo9mo9study.github.io/discord.web/", sendMessage)
+            "https://disboard.org/ja/server/603582455756095488", sendMessage)
         encodeMessage = self.shorten_url(
             longUrl, self.googleShortLinksPrefix, self.googleApiKey)
         embed = discord.Embed(title="📤積み上げツイート用",

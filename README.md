@@ -61,14 +61,13 @@ vi .env
 - ~~厳密にはDockerfileが存在する~~
 - ~~Dockerを起動すると、自動でBotが起動する状態です。~~
 ```sh
-docker build . -t discord.study
-docker run -v $(pwd)/entry_exit/env_vars:/dotfiles -itd discord.study
-docker ps # discord.studyが上がっていればok
+docker build . -t discord.VCtimeRecord
+docker run -v $(pwd)/entry_exit/env_vars:/dotfiles -itd discord.VCtimeRecord
+docker ps # discord.VCtimeRecordが上がっていればok
 ```
 ## 起動したDocker imageのbashでログイン
-- この状態でDiscordサーバの音声チャネルに入退室すると、それを検知したenterBotがログを標準出力に出力します。
 ```sh
 docker exec -it $(docker ps -lq) bash
 or
-docker exec -it $(docker ps|grep discord.study|awk -F' ' '{print $1}') bash
+docker exec -it $(docker ps|grep discord.VCtimeRecord|awk -F' ' '{print $1}') bash
 ```

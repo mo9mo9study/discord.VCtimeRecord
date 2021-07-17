@@ -1,4 +1,4 @@
-mo9mo9db
+mo9mo9db==0.0.20
 aiohttp==3.6.3
 async-timeout==3.0.1
 attrs==20.3.0

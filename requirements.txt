@@ -7,7 +7,7 @@ chardet==3.0.4
 discord.py==1.6.0
 idna==2.10
 multidict==4.7.6
-pre-commit
+pre-commit==2.13.0
 python-dateutil==2.8.1
 python-dotenv==0.10.3
 python-magic==0.4.15

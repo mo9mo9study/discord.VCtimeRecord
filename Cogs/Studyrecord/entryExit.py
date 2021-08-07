@@ -13,6 +13,8 @@ class ENTRY_EXIT(commands.Cog):
         self.channel_id = 618081921611726851  # 勉強記録
         self.pretime_dict = {}
         self.NotRecordChannels = "記録無"
+        self.iri = "<:iri:873655671873212467> "
+        self.de = "<:de:873655671919370262>"
 
     async def writeLog(self,
                        study_dt,
@@ -52,9 +54,9 @@ class ENTRY_EXIT(commands.Cog):
         print(f"[{now}] {member.name} {access}ログをDiscordに出力")
         send_channel = self.bot.get_channel(self.channel_id)
         if access == "in":
-            msg = f"**[{now}]  {member.name}  joined the  {channel.name}.**"
+            msg = f"{self.iri} [{now}]  {member.name}  joined the  {channel.name}." # noqa: E501
         elif access == "out":
-            msg = f"**[{now}]  {member.name}  Study time  {studytime} /分**"
+            msg = f"{self.de} [{now}]  {member.name}  Study time  {studytime} /分" # noqa: E501
         await send_channel.send(msg)
 
     @commands.Cog.listener()

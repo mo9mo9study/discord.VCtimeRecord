@@ -94,6 +94,28 @@ class AddrankroleMonthlyAggregation(commands.Cog):
         else:
             print(f"[DEBUG] {member.name}: 既に{add_role.name}は付与済")
 
+    async def select_attach_role(self, member, studytime_hour):
+        print(f"[DEBUG] {member.name}: {studytime_hour} h/month")
+        try:
+            if 1 <= studytime_hour <= 4:
+                await self.add_rankrole(member, self.role_silver)
+            elif 5 <= studytime_hour <= 14:
+                await self.add_rankrole(member, self.role_silver)
+            elif 15 <= studytime_hour <= 34:
+                await self.add_rankrole(member, self.role_gold)
+            elif 35 <= studytime_hour <= 74:
+                await self.add_rankrole(member, self.role_platinum)
+            elif 75 <= studytime_hour <= 114:
+                await self.add_rankrole(member, self.role_diamond)
+            elif 115 <= studytime_hour <= 164:
+                await self.add_rankrole(member, self.role_master)
+            elif 165 <= studytime_hour:
+                await self.add_rankrole(member, self.role_predator)
+        except KeyError as e:
+            log_err = f"[ERROR] ({member.name})```{e}```"
+            await self.LOG_CHANNEL.send(log_err)
+            print(log_err)
+
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
         if before.channel == after.channel:
@@ -110,30 +132,16 @@ class AddrankroleMonthlyAggregation(commands.Cog):
             access = "out"  # noqa: F841
             # 今月勉強時間を取得
             month_results = self.month_aggregate_user_record(member, now_dt)  # noqa: E501, F841
-            studytime_min = month_results[0][2]
-            studytime_hour = studytime_min // 60
-            print(f"[DEBUG] {member.name}: {studytime_hour} h/month")
             try:
-                if 1 <= studytime_hour <= 4:
-                    await self.add_rankrole(member, self.role_silver)
-                elif 5 <= studytime_hour <= 14:
-                    await self.add_rankrole(member, self.role_silver)
-                elif 15 <= studytime_hour <= 34:
-                    await self.add_rankrole(member, self.role_gold)
-                elif 35 <= studytime_hour <= 74:
-                    await self.add_rankrole(member, self.role_platinum)
-                elif 75 <= studytime_hour <= 114:
-                    await self.add_rankrole(member, self.role_diamond)
-                elif 115 <= studytime_hour <= 164:
-                    await self.add_rankrole(member, self.role_master)
-                elif 165 <= studytime_hour:
-                    await self.add_rankrole(member, self.role_predator)
-            except KeyError as e:
-                print(f'{member.name} : {e}')
-                pass
+                studytime_min = month_results[0][2]
+                studytime_hour = studytime_min // 60
+                await self.select_attach_role(member, studytime_hour)
+            except IndexError as e:
+                log_err = f"[ERROR] ({member.name})```{e}```"
+                await self.LOG_CHANNEL.send(log_err)
+                print(log_err)
 
     # studyrankのロールを全て取り外す処理
-
     async def studyrank_roles_detach(self):
         rankroles_id = [
             self.role_predator,
@@ -157,7 +165,7 @@ class AddrankroleMonthlyAggregation(commands.Cog):
                     await member.remove_roles(detach_rankrole)
         detach_total = sum(rankroles_detach_count)
         detach_counts = ', '.join(map(str, rankroles_detach_count))
-        log_msg = f"[INFO]: 月初StudyRank初期化のためRankロールを{detach_total}個({detach_counts})剥奪"  # noqa: E501
+        log_msg = f"[INFO] 月初StudyRank初期化のためRankロールを{detach_total}個({detach_counts})剥奪"  # noqa: E501
         await self.LOG_CHANNEL.send(log_msg)
         print(log_msg)
 
@@ -169,7 +177,6 @@ class AddrankroleMonthlyAggregation(commands.Cog):
     @tasks.loop(seconds=60)
     async def cron_rankroles_alldetach(self):
         await self.bot.wait_until_ready()  # Botが準備状態になるまで待機
-        print(datetime.now().strftime('%d日 %H:%M'))
         if datetime.now().strftime('%H:%M') == "00:01":
             if datetime.now().strftime('%d') == '01':
                 await self.studyrank_roles_detach()

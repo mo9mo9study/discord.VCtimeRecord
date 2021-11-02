@@ -1,7 +1,7 @@
 import re
 from datetime import datetime, timedelta
 
-from discord.ext import commands
+from discord.ext import commands, tasks
 from sqlalchemy import func as F, desc
 from sqlalchemy.orm import aliased
 
@@ -25,6 +25,7 @@ class AddrankroleMonthlyAggregation(commands.Cog):
         self.LOG_CHANNEL_ID = 801060150433153054
         self.rankroles_name = ["Predator", "Master", "Diamond", "Platinum",
                                "Gold", "Silver", "Bronze"]
+        self.cron_rankroles_alldetach.start()
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -130,6 +131,48 @@ class AddrankroleMonthlyAggregation(commands.Cog):
             except KeyError as e:
                 print(f'{member.name} : {e}')
                 pass
+
+    # studyrankのロールを全て取り外す処理
+
+    async def studyrank_roles_detach(self):
+        rankroles_id = [
+            self.role_predator,
+            self.role_master,
+            self.role_diamond,
+            self.role_platinum,
+            self.role_gold,
+            self.role_silver,
+            self.role_bronze
+        ]
+        rankroles = []
+        # roleオブジェクト取得
+        for role_id in rankroles_id:
+            rankroles.append(self.GUILD.get_role(role_id))
+        rankroles_detach_count = list(map(lambda role: len(role.members),
+                                          rankroles))
+        for detach_rankrole in rankroles:
+            if 0 != len(detach_rankrole.members):
+                for member in detach_rankrole.members:
+                    # print(f"[DEBUG] {member.name}")
+                    await member.remove_roles(detach_rankrole)
+        detach_total = sum(rankroles_detach_count)
+        detach_counts = ', '.join(map(str, rankroles_detach_count))
+        log_msg = f"[INFO]: 月初StudyRank初期化のためRankロールを{detach_total}個({detach_counts})剥奪"  # noqa: E501
+        await self.LOG_CHANNEL.send(log_msg)
+        print(log_msg)
+
+    @commands.command()
+    @commands.has_permissions(administrator=True)
+    async def admin_studyroles_alldetach(self, ctx):
+        await self.studyrank_roles_detach()
+
+    @tasks.loop(seconds=60)
+    async def cron_rankroles_alldetach(self):
+        await self.bot.wait_until_ready()  # Botが準備状態になるまで待機
+        print(datetime.now().strftime('%d日 %H:%M'))
+        if datetime.now().strftime('%H:%M') == "00:01":
+            if datetime.now().strftime('%d') == '01':
+                await self.studyrank_roles_detach()
 
 
 def setup(bot):

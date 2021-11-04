@@ -1,4 +1,5 @@
 import re
+import asyncio
 from datetime import datetime, timedelta
 
 from discord.ext import commands, tasks
@@ -25,6 +26,7 @@ class AddrankroleMonthlyAggregation(commands.Cog):
         self.LOG_CHANNEL_ID = 801060150433153054
         self.rankroles_name = ["Predator", "Master", "Diamond", "Platinum",
                                "Gold", "Silver", "Bronze"]
+        self.NotRecordChannels = "記録無"
         self.cron_rankroles_alldetach.start()
 
     @commands.Cog.listener()
@@ -122,23 +124,23 @@ class AddrankroleMonthlyAggregation(commands.Cog):
             return
         if member.bot:
             return
-        # VC退室時 or 勉強記録あり--->勉強記録なし
+        # VC退室時 and 勉強無チャンネル以外
         if (after.channel is None
-            or self.NotRecordChannels in after.channel.name
-                and before.channel != after.channel):
-
+                and before.channel != after.channel
+                and self.NotRecordChannels not in before.channel.name):
             now_dt = datetime.utcnow() + timedelta(hours=9)
             channel = before.channel  # noqa: F841
             access = "out"  # noqa: F841
             # 今月勉強時間を取得
+            await asyncio.sleep(2)
             month_results = self.month_aggregate_user_record(member, now_dt)  # noqa: E501, F841
             try:
                 studytime_min = month_results[0][2]
                 studytime_hour = studytime_min // 60
+                print(f"[DEBUG] {member.name}: {studytime_hour}/h")
                 await self.select_attach_role(member, studytime_hour)
             except IndexError as e:
                 log_err = f"[ERROR] ({member.name})```{e}```"
-                await self.LOG_CHANNEL.send(log_err)
                 print(log_err)
 
     # studyrankのロールを全て取り外す処理

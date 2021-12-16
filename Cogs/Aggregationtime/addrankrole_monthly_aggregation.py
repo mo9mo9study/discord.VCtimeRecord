@@ -27,12 +27,16 @@ class AddrankroleMonthlyAggregation(commands.Cog):
         self.rankroles_name = ["Predator", "Master", "Diamond", "Platinum",
                                "Gold", "Silver", "Bronze"]
         self.NotRecordChannels = "記録無"
+        self.MONTHSTUDYRANK_CHANNEL_ID = 920974594825932800
         self.cron_rankroles_alldetach.start()
 
     @commands.Cog.listener()
     async def on_ready(self):
         self.GUILD = self.bot.get_guild(self.GUILD_ID)
         self.LOG_CHANNEL = self.GUILD.get_channel(self.LOG_CHANNEL_ID)
+        self.MONTHSTUDYRANK_CHANNEL = self.GUILD.get_channel(
+            self.MONTHSTUDYRANK_CHANNEL_ID)
+        
 
     def role(self, beforeroles, afterroles):
         print("tmp")
@@ -91,8 +95,10 @@ class AddrankroleMonthlyAggregation(commands.Cog):
             # 勉強時間に応じたRank権限の付与
             await member.add_roles(add_role)
             log_msg = f"[INFO] {member.name} に {add_role.name} を付与"
+            send_msg = f"GG {member.mention}, Your rank has risen to {add_role.name}!"  # noqa: E501
             print(log_msg)
             await self.LOG_CHANNEL.send(log_msg)
+            await self.MONTHSTUDYRANK_CHANNEL.send(send_msg)
         else:
             print(f"[DEBUG] {member.name}: 既に{add_role.name}は付与済")
 

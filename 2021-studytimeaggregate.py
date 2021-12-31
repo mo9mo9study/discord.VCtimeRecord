@@ -85,16 +85,15 @@ class Personal_2021Record(commands.Cog):
         return json.loads(r.content)["shortLink"]
 
     def compose_user_record(self, studytime):
-        day_result = '''
-#2021年の積み上げ
+        result = '''#2021年の振り返り
 -
 -
 
 #もくもくオンライン勉強会
-[ 2021年の勉強時間 ]
+[ 2021年の総勉強時間 ]
 ---> {totalStudyTime} /時間
         '''.format(totalStudyTime=studytime)
-        return day_result
+        return result
 
     @commands.group(invoke_without_command=True)
     async def result2021(self, ctx, *args):
